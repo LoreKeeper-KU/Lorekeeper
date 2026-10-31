@@ -1,3 +1,4 @@
+# Authored By Saif Altamimi 31/10/2026
 """Examples of every AIClient method.
 
 Run from the main Lorekeeper folder:  python ai_client_examples.py

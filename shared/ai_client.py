@@ -1,3 +1,5 @@
+# Authored By Saif Altamimi 31/10/2026
+
 """Shared AI client for LoreKeeper.
 
 Every module calls AI through this class instead of a vendor library.

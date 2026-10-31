@@ -1,3 +1,4 @@
+# Authored By Saif Altamimi 31/10/2026
 from shared.schemas import CanonFact
 from multimodal.visuals import build_visual_prompt
 

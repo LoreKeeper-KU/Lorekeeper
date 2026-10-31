@@ -1,3 +1,4 @@
+# Authored By Saif Altamimi 31/10/2026
 """Shared settings for every LoreKeeper module.
 
 Everything is read from the .env file, so the team can switch provider or

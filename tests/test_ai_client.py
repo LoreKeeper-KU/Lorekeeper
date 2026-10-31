@@ -1,3 +1,4 @@
+# Authored By Saif Altamimi 31/10/2026
 """Tests for shared/ai_client.py.
 
 These start a tiny FAKE AI server on your own computer, so they are free,
