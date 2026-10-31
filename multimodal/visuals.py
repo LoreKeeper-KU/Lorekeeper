@@ -62,6 +62,22 @@ INTEGRATION CONTRACT:
 
 from shared.schemas import CanonFact, VisualAsset, VisualReport
 
+STYLE = "A cinematic fantasy illustration."
+
+
+def build_visual_prompt(scene: str, canon_facts: list[CanonFact]) -> str:
+    """Turn a scene and its canon facts into a prompt for the image model."""
+    lines = [STYLE, f"Scene: {scene}"]
+
+    if canon_facts:
+        lines.append("Respect these established facts about the world:")
+        for fact in canon_facts:
+            predicate = fact.predicate.replace("_", " ")
+            lines.append(f"- {fact.subject} ({predicate}): {fact.object}")
+
+    lines.append("Avoid visual details that conflict with these facts.")
+    return "\n".join(lines)
+
 
 def generate_visual(scene: str, canon_facts: list[CanonFact]) -> VisualAsset:
     """Generate an image for a repaired scene and return its metadata."""
