@@ -86,5 +86,26 @@ class LLMClaimProposer:
         return message.parsed.claims
 
 
+class SharedClientClaimProposer:
+    """Proposes claims through the team's shared AIClient.generate_structured.
+
+    The client is injected, so tests pass a fake. Quote checking and offsets stay in
+    ClaimExtractor; this class only turns the structured result into a claim list.
+    """
+
+    def __init__(self, client):
+        self.client = client
+
+    def __call__(self, text: str) -> list[ProposedClaim]:
+        return self.client.generate_structured(SYSTEM_PROMPT, text, ClaimProposals).claims
+
+
+def default_claim_proposer() -> SharedClientClaimProposer:
+    """Build the proposer on a real AIClient; raises AIClientError if AI_API_KEY is missing."""
+    from shared.ai_client import AIClient  # imported here so the module loads without it
+
+    return SharedClientClaimProposer(AIClient())
+
+
 def extract_claims(scene: Scene, client, model: str) -> list[Claim]:
     return ClaimExtractor(LLMClaimProposer(client, model)).extract(scene)
