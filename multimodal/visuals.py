@@ -60,7 +60,7 @@ INTEGRATION CONTRACT:
     Receives Abdullah's repaired story and Abdulaziz's canon.
     Keep the image path and verification result separate from story text.
 """
-
+from shared.ai_client import AIClient
 from shared.schemas import CanonFact, VisualAsset, VisualReport
 
 STYLE = "A cinematic fantasy illustration."
@@ -80,10 +80,19 @@ def build_visual_prompt(scene: str, canon_facts: list[CanonFact]) -> str:
     return "\n".join(lines)
 
 
-def generate_visual(scene: str, canon_facts: list[CanonFact]) -> VisualAsset:
+def generate_visual(
+        scene: str,
+        canon_facts: list[CanonFact],
+        ai: AIClient | None = None) -> VisualAsset:
     """Generate an image for a repaired scene and return its metadata."""
-    # TODO (Saif): Compose the prompt and call image generation.
-    raise NotImplementedError("Saif: implement generate_visual")
+    ai = ai or AIClient()
+    # 1. Build the prompt from the scene and facts
+    prompt = build_visual_prompt(scene, canon_facts)
+    # 2. Ask the AI client to generate an image from that prompt
+    image_path = ai.generate_image(prompt) 
+    # 3. Package the image path and prompt into a VisualAsset and return it
+    return VisualAsset(image_path=image_path, prompt=prompt)
+
 
 
 def verify_visual(
