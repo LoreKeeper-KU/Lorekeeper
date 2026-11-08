@@ -24,13 +24,29 @@ from continuity_checker.models import Claim, SourceSpan
 from continuity_checker.nli_comparator import NLIComparator
 from continuity_checker.predicate_policy import EXCLUSIVE_PREDICATES, NEGATIVE_OBJECTS
 from continuity_checker.relevance import select_relevant_facts
-from evaluation.dataset import BENCHMARK_DIR, Benchmark, load_benchmark, verify_manifest
+from evaluation.dataset import (
+    BENCHMARK_DIR,
+    DEVSET_DIR,
+    Benchmark,
+    load_benchmark,
+    verify_manifest,
+)
 from evaluation.metrics import compute_metrics, evidence_metrics
 from shared import config
 
 DEFAULT_NLI_MODEL = "MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli"
 RESULTS_DIR = Path(__file__).parent / "results"
+RESULTS_DEV_DIR = Path(__file__).parent / "results_dev"
 REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+def resolve_set(name: str) -> tuple[Path, Path]:
+    """Dataset folder and results folder for a set: the dev set never writes to results/."""
+    if name == "benchmark":
+        return BENCHMARK_DIR, RESULTS_DIR
+    if name == "dev":
+        return DEVSET_DIR, RESULTS_DEV_DIR
+    raise ValueError(f"unknown set {name!r}; use 'benchmark' or 'dev'")
 
 PREDICTION_COLUMNS = [
     "claim_id", "world_id", "claim", "category", "difficulty", "expected", "predicted", "correct",
@@ -259,14 +275,20 @@ def run_evaluation(
     return run_dir
 
 
-def main() -> None:
+def main(argv: Optional[list[str]] = None) -> None:
+    import argparse
+
     from continuity_checker.nli_comparator import load_hf_scorer
     from shared.ai_client import AIClient
+
+    parser = argparse.ArgumentParser(description="Run an evaluation set through the verifier.")
+    parser.add_argument("--set", choices=["benchmark", "dev"], default="benchmark")
+    dataset_dir, results_dir = resolve_set(parser.parse_args(argv).set)
 
     client = AIClient()  # fails clearly if AI_API_KEY is missing, before the model loads
     scorer, labels = load_hf_scorer(DEFAULT_NLI_MODEL)
     run_dir = run_evaluation(
-        BENCHMARK_DIR, RESULTS_DIR, scorer, labels, client, nli_model=DEFAULT_NLI_MODEL
+        dataset_dir, results_dir, scorer, labels, client, nli_model=DEFAULT_NLI_MODEL
     )
     metrics = json.loads((run_dir / "metrics.json").read_text(encoding="utf-8"))["metrics"]
     print(f"results: {run_dir}")

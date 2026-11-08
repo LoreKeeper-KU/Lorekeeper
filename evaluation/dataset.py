@@ -14,6 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from shared.schemas import CanonFact, ClaimClassification
 
 BENCHMARK_DIR = Path(__file__).parent / "benchmark"
+DEVSET_DIR = Path(__file__).parent / "devset"
 MANIFEST_NAME = "MANIFEST.json"
 FROZEN_FILES = ("worlds.json", "claims.jsonl", "LABELLING_POLICY.md")
 

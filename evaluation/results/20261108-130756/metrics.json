@@ -1,0 +1,78 @@
+{
+  "metrics": {
+    "n": 52,
+    "accuracy": 0.8076923076923077,
+    "macro_f1": 0.8160287081339713,
+    "per_class": {
+      "SUPPORTED": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 12
+      },
+      "CONTRADICTION": {
+        "precision": 1.0,
+        "recall": 0.5714285714285714,
+        "f1": 0.7272727272727273,
+        "support": 14
+      },
+      "VALID_NEW_ADDITION": {
+        "precision": 1.0,
+        "recall": 0.6666666666666666,
+        "f1": 0.8,
+        "support": 12
+      },
+      "UNCERTAIN": {
+        "precision": 0.5833333333333334,
+        "recall": 1.0,
+        "f1": 0.7368421052631579,
+        "support": 14
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "SUPPORTED",
+        "CONTRADICTION",
+        "VALID_NEW_ADDITION",
+        "UNCERTAIN"
+      ],
+      "rows_are": "expected",
+      "columns_are": "predicted",
+      "matrix": [
+        [
+          12,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          8,
+          0,
+          6
+        ],
+        [
+          0,
+          0,
+          8,
+          4
+        ],
+        [
+          0,
+          0,
+          0,
+          14
+        ]
+      ]
+    },
+    "safety": {
+      "unsafe_approvals": 0,
+      "false_contradictions": 0
+    }
+  },
+  "evidence": {
+    "evaluated": 20,
+    "exact_match": 17,
+    "exact_match_rate": 0.85
+  }
+}

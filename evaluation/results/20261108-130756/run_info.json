@@ -1,0 +1,42 @@
+{
+  "run_started_utc": "2026-11-08T13:05:45+00:00",
+  "dataset": {
+    "claim_count": 52,
+    "sha256": {
+      "worlds.json": "d5519a679b2a030f67c314608a9a4278561190e8d7a5e9c867153c114246154d",
+      "claims.jsonl": "245dcfc5636c4dac5bd4dc2c03e3be820466d1465a12e9176b73960de793f34e",
+      "LABELLING_POLICY.md": "17a9fa9ec8b4c522a130dadbe6292790d8f88bb866812b53846efbb2900e37fb"
+    }
+  },
+  "nli_model": "MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli",
+  "nli_thresholds": {
+    "contradiction": 0.5,
+    "entailment": 0.5
+  },
+  "text_model": "gpt-5.4-mini",
+  "ai_base_url": "https://api.openai.com/v1",
+  "judge_prompt_sha256": "e7909924096cbb00b6f5571025f2266d01a72dfa0bf8dc402205863f20013080",
+  "exclusive_predicates": [
+    "birthplace",
+    "eye_color",
+    "hair_color",
+    "species",
+    "status"
+  ],
+  "negative_objects": [
+    "never",
+    "no_one",
+    "nobody",
+    "none",
+    "nothing"
+  ],
+  "claim_extraction": "excluded: benchmark claims are fed to the pipeline as written",
+  "git_commit": "d52173c27dabfb7e7dae10c488368aee55f796b1",
+  "git_dirty": false,
+  "python": "3.11.9",
+  "packages": {
+    "torch": "2.10.0+cu128",
+    "transformers": "5.3.0",
+    "scikit-learn": "1.8.0"
+  }
+}
