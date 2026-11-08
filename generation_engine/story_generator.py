@@ -4,47 +4,45 @@
 # with a call to the shared ai_client.py.
 
 
-from .models import DemoRequest, Scene, VerificationReport
+from shared.schemas import (
+    CanonFact,
+    ClaimClassification,
+    VerificationReport,
+)
 
 
-def generate_story(request: DemoRequest) -> Scene:
+def generate_scene(
+    prompt: str,
+    canon_facts: list[CanonFact],
+) -> str:
     """
     Creates the first version of a scene.
-
-    For this demo, the scene intentionally contains a contradiction:
-    Amina uses magic even though the canon says she has no magic.
     """
 
-    scene_text = (
+    return (
         "Princess Amina stood on the walls of Silverkeep Castle. "
         "She summoned a magical firestorm to drive back the attackers."
     )
 
-    return Scene(
-        scene_id="scene_001",
-        text=scene_text,
-        revision=0,
-    )
 
-
-def repair_story(
-    scene: Scene,
+def repair_scene(
+    scene: str,
     report: VerificationReport,
-) -> Scene:
+    canon_facts: list[CanonFact],
+) -> str:
     """
-    Repairs the scene using the verifier's correction instruction.
-
-    The function changes only the conflicting sentence and keeps
-    the rest of the scene unchanged.
+    Repairs only the contradictory part of the scene.
     """
 
-    repaired_text = scene.text.replace(
-        "She summoned a magical firestorm to drive back the attackers.",
-        "She commanded her archers to fire flaming arrows at the attackers.",
+    has_contradiction = any(
+        claim.classification == ClaimClassification.CONTRADICTION
+        for claim in report.claims
     )
 
-    return Scene(
-        scene_id=scene.scene_id,
-        text=repaired_text,
-        revision=scene.revision + 1,
-    )
+    if has_contradiction:
+        return scene.replace(
+            "She summoned a magical firestorm to drive back the attackers.",
+            "She commanded her archers to fire flaming arrows at the attackers.",
+        )
+
+    return scene

@@ -4,6 +4,7 @@
 
 from dataclasses import dataclass, field
 
+from shared.schemas import CanonFact, VerificationReport
 
 @dataclass
 class DemoRequest:
@@ -33,25 +34,6 @@ class Scene:
     # The first version is 0. Each repair increases the number.
     revision: int = 0
 
-
-@dataclass
-class VerificationReport:
-    # The scene that was checked.
-    scene_id: str
-
-    # Possible values:
-    # "consistent" = no problem was found
-    # "conflict"   = a contradiction was found
-    # "error"      = the checker failed
-    status: str
-
-    # Explanation of the detected contradiction.
-    # This remains empty when the scene is consistent.
-    conflict: str = ""
-
-    # Instructions describing how the scene should be repaired.
-    # This remains empty when no repair is needed.
-    correction: str = ""
 
 
 @dataclass
