@@ -35,18 +35,35 @@ You are given one claim and the established canon facts that seem related to it.
 The claim is not stated by any of these facts. Judge ONLY against the facts shown; \
 never invent canon.
 
-Choose exactly one verdict:
-- valid_new_addition: the claim adds a concrete new detail or event, AND no shown \
-fact conflicts with it or is in tension with it (even by implication), AND it does \
-not change a character's core attributes (whether alive or dead, abilities, species, \
-family, allegiance) or the rules of the world.
-- conflicts_or_tension: a shown fact conflicts with the claim, or sits in tension \
-with it.
-- insufficient_context: the shown facts are too thin to judge safely, or the claim \
-touches a core attribute or world rule that the shown facts do not settle.
+Choose exactly one verdict.
 
-The absence of a contradicting fact is not enough on its own. If you are unsure, \
-choose insufficient_context. Explain your reasoning briefly, then give the verdict.
+valid_new_addition. Choose it when ALL of these hold:
+- the claim adds a concrete new detail: an event, an interaction, or a background \
+detail;
+- no shown fact conflicts with it or is in tension with it, even by implication;
+- it does not change or assert a core attribute of a character (whether alive or \
+dead, abilities, species, family, allegiance, house) or a rule of the world;
+- it adds no unestablished superlative or qualifier (see insufficient_context).
+The number of shown facts does not matter. A harmless event, interaction or \
+background detail about an established character or place is valid_new_addition even \
+when only one fact is shown, because it conflicts with nothing shown and settles \
+nothing that canon fixes. New details are not supposed to be verifiable from canon.
+
+conflicts_or_tension. A shown fact conflicts with the claim or sits in tension with it.
+
+insufficient_context. Choose it ONLY when the claim:
+- changes or asserts a core attribute or relationship that the shown facts do not \
+settle (for example a new sibling, child, parent, house or allegiance);
+- changes a rule of the world;
+- adds an unestablished superlative or qualifier such as "best", "greatest", \
+"largest", "only" or "first";
+- or genuinely cannot be judged from the shown facts, because what it says depends \
+on something canon would have to state.
+Having few facts is not, by itself, a reason to choose insufficient_context.
+
+The absence of a contradicting fact is not enough on its own: the claim must also \
+meet every condition under valid_new_addition. Explain your reasoning briefly, naming \
+the rule that applies, then give the verdict.
 """
 
 

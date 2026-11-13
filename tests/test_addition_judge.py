@@ -197,3 +197,94 @@ def test_real_shared_client_round_trip_declines_on_insufficient_context(fake_cha
     ).model_dump_json()
 
     assert LLMAdditionJudge(fake_chat_api.client)(CLAIM, FACTS) is False
+
+
+# --- the decision rules the prompt states -------------------------------------------------------
+# These check what the prompt tells the model. They cannot show that the model obeys it; that
+# needs a live run.
+
+
+def normalised_prompt():
+    return " ".join(ADDITION_SYSTEM_PROMPT.lower().split())
+
+
+def test_prompt_says_few_facts_is_not_by_itself_a_reason_for_insufficient_context():
+    prompt = normalised_prompt()
+
+    assert "few facts" in prompt
+    assert "not, by itself, a reason" in prompt
+
+
+def test_prompt_allows_a_harmless_event_interaction_or_background_detail_on_thin_canon():
+    prompt = normalised_prompt()
+
+    for kind in ("event", "interaction", "background detail"):
+        assert kind in prompt
+    assert "even when only one fact" in prompt
+
+
+def test_prompt_lists_when_insufficient_context_applies():
+    prompt = normalised_prompt()
+
+    for word in ('"best"', '"greatest"', '"largest"', '"only"', '"first"'):
+        assert word in prompt
+    assert "core attribute" in prompt
+    assert "rule of the world" in prompt
+    assert "genuinely cannot be judged" in prompt
+
+
+def test_prompt_has_no_blanket_rule_to_decline_when_unsure():
+    prompt = normalised_prompt()
+
+    assert "if you are unsure" not in prompt
+    assert "unsure, choose insufficient_context" not in prompt
+
+
+def test_prompt_still_sends_conflicts_and_tension_to_their_own_verdict():
+    prompt = normalised_prompt()
+
+    assert "conflicts_or_tension" in prompt
+    assert "conflicts with the claim or sits in tension" in prompt
+
+
+def test_prompt_asks_the_model_to_name_the_rule_it_applied():
+    assert "naming the rule" in normalised_prompt()
+
+
+GUILD_FACT = CanonFact(id="g-001", subject="Tessa", predicate="house", object="House Vale")
+BAKERY_FACT = CanonFact(id="g-002", subject="The bakery", predicate="located_in", object="Low Street")
+HARBOUR_FACT = CanonFact(id="g-003", subject="The harbour", predicate="located_in", object="the east bay")
+
+
+@pytest.mark.parametrize(
+    "claim_text, facts, verdict, approved",
+    [
+        # harmless event, only one relevant fact: thin canon alone must not block it
+        ("The bakery sold out of rye bread by noon.", [BAKERY_FACT],
+         AdditionVerdict.VALID_NEW_ADDITION, True),
+        # harmless background detail, thin canon
+        ("The harbour smells of tar.", [HARBOUR_FACT],
+         AdditionVerdict.VALID_NEW_ADDITION, True),
+        # unestablished superlative or qualifier
+        ("Tessa is the best archer in the guild.", [GUILD_FACT],
+         AdditionVerdict.INSUFFICIENT_CONTEXT, False),
+        # unsettled family relationship
+        ("Tessa has a younger sister.", [GUILD_FACT],
+         AdditionVerdict.INSUFFICIENT_CONTEXT, False),
+        # an actual conflict
+        ("Tessa belongs to House Orm.", [GUILD_FACT],
+         AdditionVerdict.CONFLICTS_OR_TENSION, False),
+    ],
+)
+def test_the_judge_always_asks_the_model_even_on_one_fact_and_obeys_its_verdict(
+    claim_text, facts, verdict, approved
+):
+    client = FakeSharedClient(verdict=verdict)
+    claim = Claim(claim_id="C1", text=claim_text, source_span=SourceSpan(start=0, end=len(claim_text)))
+
+    result = LLMAdditionJudge(client)(claim, facts)
+
+    assert result is approved
+    ((_, prompt, _),) = client.calls
+    assert claim_text in prompt
+    assert all(f"{fact.id}:" in prompt for fact in facts)
