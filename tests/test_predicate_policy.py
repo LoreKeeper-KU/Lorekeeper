@@ -13,12 +13,21 @@ def test_single_valued_predicates_are_exclusive(predicate):
     assert is_exclusive(fact(predicate))
 
 
-@pytest.mark.parametrize("predicate", ["weapon", "rules", "magic_ability", "ally_of"])
+@pytest.mark.parametrize("predicate", ["father", "mother", "house", "allegiance"])
+def test_single_valued_relationships_are_exclusive(predicate):
+    # A person has one father, one mother, one house and one sworn allegiance (see the
+    # benchmark's LABELLING_POLICY.md), so a conflicting value is a contradiction.
+    assert is_exclusive(fact(predicate, "Someone"))
+
+
+@pytest.mark.parametrize(
+    "predicate", ["weapon", "tool", "pet", "vehicle", "rules", "magic_ability", "ally_of"]
+)
 def test_other_predicates_are_not_exclusive_by_default(predicate):
     assert not is_exclusive(fact(predicate))
 
 
-@pytest.mark.parametrize("predicate", ["Eye Color", "eye-color", " EYE_COLOR "])
+@pytest.mark.parametrize("predicate", ["Eye Color", "eye-color", " EYE_COLOR ", "Father", " MOTHER "])
 def test_predicate_spelling_is_normalised(predicate):
     assert is_exclusive(fact(predicate))
 

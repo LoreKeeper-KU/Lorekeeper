@@ -10,8 +10,12 @@ import re
 
 from continuity_checker.models import CanonFact
 
-# Single-valued attributes: a subject has one value at a time.
-EXCLUSIVE_PREDICATES = frozenset({"status", "eye_color", "hair_color", "species", "birthplace"})
+# Single-valued attributes and relationships: a subject has one value at a time. Father,
+# mother, house and allegiance follow the benchmark's labelling policy (one father, one mother,
+# one house, one sworn allegiance); weapon, tool, pet and vehicle stay non-exclusive.
+EXCLUSIVE_PREDICATES = frozenset(
+    {"status", "eye_color", "hair_color", "species", "birthplace", "father", "mother", "house", "allegiance"}
+)
 
 # An explicit absence excludes every claimed value, whatever the predicate.
 NEGATIVE_OBJECTS = frozenset({"none", "nobody", "no_one", "nothing", "never"})

@@ -162,6 +162,17 @@ def test_a_conflict_with_an_exclusive_fact_is_still_a_contradiction():
     assert result.evidence_ids == ["F011"]
 
 
+def test_a_conflict_with_a_relationship_fact_is_a_contradiction():
+    for predicate, value in [("father", "Eli"), ("mother", "Odette"), ("house", "House Mori"),
+                             ("allegiance", "the Guild")]:
+        fact = make_fact("F020", predicate=predicate, value=value)
+        result = ContradictionClassifier(must_not_be_called).classify(
+            make_claim(), comparison(Verdict.CONTRADICTION, conflicting=["F020"]), [fact]
+        )
+        assert result.classification == ClaimClassification.CONTRADICTION, predicate
+        assert result.evidence_ids == ["F020"]
+
+
 def test_only_the_exclusive_facts_are_cited_when_conflicts_are_mixed():
     result = ContradictionClassifier().classify(
         make_claim(),
