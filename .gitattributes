@@ -1,2 +1,3 @@
 evaluation/benchmark/* text eol=lf
 evaluation/devset/* text eol=lf
+evaluation/heldout/* text eol=lf
