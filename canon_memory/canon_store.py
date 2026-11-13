@@ -89,3 +89,25 @@ class CanonStore:
             CanonFact.model_validate_json(row[0])
             for row in rows
         ]
+
+    def get_facts_by_subject(
+        self,
+        world_id: str,
+        subject: str
+    ) -> list[CanonFact]:
+        """Retrieve approved facts about a specific subject."""
+
+        with closing(self._connect()) as conn:
+            rows = conn.execute("""
+                SELECT payload_json
+                FROM canon_facts
+                WHERE world_id = ?
+                AND subject = ?
+                AND status = 'approved'
+                ORDER BY fact_id
+            """, (world_id, subject)).fetchall()
+
+        return [
+            CanonFact.model_validate_json(row[0])
+            for row in rows
+        ]
