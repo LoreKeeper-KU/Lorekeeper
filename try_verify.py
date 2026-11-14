@@ -1,3 +1,5 @@
+#Authored By Saif Altamimi 14/11/2026
+
 from multimodal.visuals import verify_visual
 from shared.schemas import CanonFact, VisualAsset
 
