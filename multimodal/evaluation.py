@@ -1,5 +1,3 @@
-#Authored by Saif Altamimi 14/11/2026
-
 """Evaluate the visual module against human judgement.
 
 Step 1 - run every scenario through the real pipeline (makes PAID API calls):
@@ -117,6 +115,16 @@ def run_scenario(scenario: dict, ai) -> list[dict]:
     return rows
 
 
+def read_results(path: Path) -> pd.DataFrame:
+    """Read the results CSV, whichever text encoding Excel saved it in."""
+    for encoding in ("utf-8-sig", "cp1252"):  # standard UTF-8 first, then Windows/Excel
+        try:
+            return pd.read_csv(path, keep_default_na=False, encoding=encoding)
+        except UnicodeDecodeError:
+            continue
+    raise ValueError(f"Could not read {path}. In Excel, save it as 'CSV UTF-8'.")
+
+
 def has_human_judgements(df: pd.DataFrame) -> bool:
     """True if anyone has already typed a human verdict into the table."""
     return any((df[col].astype(str).str.strip() != "").any() for col in HUMAN_STATUS_COLUMNS)
@@ -138,7 +146,7 @@ def run_evaluation(
 
     existing = pd.DataFrame()
     if results_path.exists():
-        existing = pd.read_csv(results_path, keep_default_na=False)
+        existing = read_results(results_path)
         ids_to_replace = {s["id"] for s in scenarios}
         replaced = existing[existing["scenario_id"].isin(ids_to_replace)]
         if not force and not replaced.empty and has_human_judgements(replaced):
@@ -182,7 +190,7 @@ def percent(part: int, whole: int) -> str:
 
 def summarize(results_path: Path = RESULTS_PATH) -> dict:
     """Compare the verifier with the human verdicts and print the headline numbers."""
-    df = pd.read_csv(results_path, keep_default_na=False)
+    df = read_results(results_path)
     for col in HUMAN_STATUS_COLUMNS:
         df[col] = df[col].astype(str).str.strip().str.lower()
         bad = df[(df[col] != "") & ~df[col].isin(STATUSES)]

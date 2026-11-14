@@ -1,4 +1,4 @@
-#Authored by Saif Altamimi 14/11/2026
+#Authored By Saif Altamimi 14/11/2026
 
 """Tests for multimodal/evaluation.py. No API calls: a fake AI client is used."""
 import pandas as pd
@@ -118,3 +118,16 @@ def test_summarize_rejects_typos_in_human_columns(tmp_path):
 
     with pytest.raises(ValueError, match="matchh|S01/F001"):
         summarize(results)
+
+
+def test_summarize_reads_csv_saved_by_excel_on_windows(tmp_path):
+    # Excel on Windows saves CSVs in "cp1252", where an en dash is byte 0x96
+    fake = FakeAIClient(first={"F001": "match", "F004": "match", "F005": "match"})
+    results = tmp_path / "results.csv"
+    table = run_evaluation(results_path=results, ai=fake, only=["S01"])
+    table["human_initial_status"] = "match"
+    table.loc[0, "human_notes"] = "hair clearly black \u2013 easy to see"
+    table.to_csv(results, index=False, encoding="cp1252")
+
+    summary = summarize(results)
+    assert summary["verifier_agreement"] == (3, 3)
