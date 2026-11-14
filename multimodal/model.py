@@ -12,7 +12,8 @@ class FactCheck(BaseModel):
     fact_id: str = Field(description="The id of the fact being checked, copied exactly")
     status: Literal["match", "mismatch", "unable_to_assess"]
     observed: Optional[str] = Field(
-        default=None, description="What is actually visible, or null if not visible"
+        default=None,
+        description="Only the visible value in 1-3 words (e.g. 'gold'), or null if not visible",
     )
     explanation: str = Field(description="One short sentence about what you saw")
 

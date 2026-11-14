@@ -141,8 +141,9 @@ def verify_visual(
     issues = []
     for check in mismatches:
         fact = facts_by_id[check.fact_id]
+        predicate = fact.predicate.replace("_", " ")
         issues.append(
-            f"{fact.subject} {fact.predicate}: expected '{fact.object}', "
+            f"{fact.subject} {predicate}: expected '{fact.object}', "
             f"image shows '{check.observed}'. {check.explanation}"
         )
 
