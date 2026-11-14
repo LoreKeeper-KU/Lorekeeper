@@ -5,6 +5,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
+from shared.schemas import VisualAsset, VisualReport
 
 class FactCheck(BaseModel):
     """The vision model's verdict on ONE canon fact."""
@@ -22,3 +23,11 @@ class VisionCheckResult(BaseModel):
     """Everything the vision model returns: one FactCheck per fact."""
 
     checks: list[FactCheck]
+
+class VisualRepairResult(BaseModel):
+    """What repair_visual returns: the final image, its report, and how it went."""
+
+    asset: VisualAsset  # the final image (original if no repair was needed)
+    report: VisualReport  # the check of that final image
+    attempts: int  # how many edits were made (0 = none needed)
+    needs_human_review: bool  # True if mismatches remain after all attempts    

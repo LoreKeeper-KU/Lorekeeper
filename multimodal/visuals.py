@@ -61,8 +61,11 @@ INTEGRATION CONTRACT:
     Keep the image path and verification result separate from story text.
 """
 from shared.ai_client import AIClient
+
 from shared.schemas import CanonFact, VisualAsset, VisualReport
-from multimodal.model import VisionCheckResult
+
+from multimodal.model import VisionCheckResult, VisualRepairResult
+
 
 STYLE = "A cinematic fantasy illustration."
 
@@ -156,3 +159,55 @@ def verify_visual(
     )
     
 
+MAX_REPAIR_ATTEMPTS = 3  # stop after this many edits, to limit cost
+
+def build_repair_prompt(report: VisualReport, canon_facts: list[CanonFact]) -> str:
+    """Tell the image model exactly what to fix, and to leave the rest alone."""
+    facts_by_id = {fact.id: fact for fact in canon_facts}
+    lines = ["Edit this illustration. Make ONLY these changes:"]
+    for fact_id in report.evidence_fact_ids:
+        fact = facts_by_id[fact_id]
+        predicate = fact.predicate.replace("_", " ")
+        lines.append(f"- {fact.subject}'s {predicate} must be {fact.object}")
+    lines.append("Problems found in the current image:")
+    for issue in report.issues:
+        lines.append(f"- {issue}")
+    lines.append(
+        "Keep everything else exactly the same: people, poses, background, "
+        "lighting and art style."
+    )
+    return "\n".join(lines)
+
+
+
+def repair_visual(
+    asset: VisualAsset,
+    report: VisualReport,
+    canon_facts: list[CanonFact],
+    ai: AIClient | None = None,
+    max_attempts: int = MAX_REPAIR_ATTEMPTS,
+) -> VisualRepairResult:
+    """Edit an inconsistent image until it matches canon, or give up after max_attempts."""
+    ai = ai or AIClient()
+    attempts = 0
+
+    # Keep fixing while the image is wrong AND we still have tries left
+    while not report.consistent and attempts < max_attempts:
+        attempts += 1
+
+        # 1. Ask the image model to fix only the mismatched details
+        prompt = build_repair_prompt(report, canon_facts)
+        new_path = ai.edit_image(asset.image_path, prompt)
+
+        # 2. The edited image becomes the current one
+        asset = VisualAsset(image_path=new_path, prompt=prompt)
+
+        # 3. Check the NEW image again, never trust the edit blindly
+        report = verify_visual(asset, canon_facts, ai=ai)
+
+    return VisualRepairResult(
+        asset=asset,
+        report=report,
+        attempts=attempts,
+        needs_human_review=not report.consistent,
+    )

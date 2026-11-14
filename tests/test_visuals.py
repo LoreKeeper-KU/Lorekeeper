@@ -1,6 +1,11 @@
 # Authored By Saif Altamimi 31/10/2026
 from multimodal.model import FactCheck, VisionCheckResult
-from multimodal.visuals import build_visual_prompt, generate_visual, verify_visual
+from multimodal.visuals import (
+    build_visual_prompt,
+    generate_visual,
+    repair_visual,
+    verify_visual,
+)
 from shared.schemas import CanonFact, VisualAsset
 
 SCENE = (
@@ -17,9 +22,10 @@ ASSET = VisualAsset(image_path="outputs/fake_image.png", prompt="(any prompt)")
 class FakeAIClient:
     """Pretends to be AIClient: no API calls, no cost."""
 
-    def __init__(self, vision_result=None):
+    def __init__(self, *vision_results):
         self.prompts = []  # remembers every prompt it receives
-        self.vision_result = vision_result  # what analyze_image should "see"
+        self.vision_results = list(vision_results)  # what analyze_image "sees", in order
+        self.edits = []  # remembers every (image_path, prompt) sent to edit_image
 
     def generate_image(self, prompt):
         self.prompts.append(prompt)
@@ -27,7 +33,14 @@ class FakeAIClient:
 
     def analyze_image(self, image_path, prompt, schema=None):
         self.prompts.append(prompt)
-        return self.vision_result
+        # Use the answers in order; keep repeating the last one when we run out
+        if len(self.vision_results) > 1:
+            return self.vision_results.pop(0)
+        return self.vision_results[0]
+
+    def edit_image(self, image_path, prompt):
+        self.edits.append((image_path, prompt))
+        return f"outputs/fake_edit_{len(self.edits)}.png"
 
 
 def vision(*checks):
@@ -112,3 +125,46 @@ def test_verify_visual_ignores_invented_fact_ids():
     report = verify_visual(ASSET, FACTS, ai=fake)
     assert report.consistent is True
     assert report.evidence_fact_ids == []
+
+
+# --- repair_visual ------------------------------------------------------------
+
+GOOD = vision(("fact-001", "match", "golden spear"))
+BAD = vision(("fact-001", "mismatch", "blue staff"))
+
+
+def test_repair_skips_consistent_image():
+    fake = FakeAIClient(GOOD)
+    report = verify_visual(ASSET, FACTS, ai=fake)
+
+    result = repair_visual(ASSET, report, FACTS, ai=fake)
+
+    assert result.attempts == 0
+    assert fake.edits == []  # no money spent on edits
+    assert result.needs_human_review is False
+
+
+def test_repair_fixes_mismatch_in_one_edit():
+    # First check sees the blue staff, the check after the edit sees the spear
+    fake = FakeAIClient(BAD, GOOD)
+    report = verify_visual(ASSET, FACTS, ai=fake)
+
+    result = repair_visual(ASSET, report, FACTS, ai=fake)
+
+    assert result.attempts == 1
+    assert result.report.consistent is True
+    assert result.asset.image_path == "outputs/fake_edit_1.png"
+    edited_path, edit_prompt = fake.edits[0]
+    assert edited_path == ASSET.image_path  # edited the original image
+    assert "golden spear" in edit_prompt  # asked for the canon value
+
+
+def test_repair_stops_after_max_attempts():
+    fake = FakeAIClient(BAD)  # the mistake never goes away
+    report = verify_visual(ASSET, FACTS, ai=fake)
+
+    result = repair_visual(ASSET, report, FACTS, ai=fake, max_attempts=2)
+
+    assert result.attempts == 2
+    assert len(fake.edits) == 2  # stopped, did not loop forever
+    assert result.needs_human_review is True
