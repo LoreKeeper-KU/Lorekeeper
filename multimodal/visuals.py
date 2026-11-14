@@ -62,6 +62,7 @@ INTEGRATION CONTRACT:
 """
 from shared.ai_client import AIClient
 from shared.schemas import CanonFact, VisualAsset, VisualReport
+from multimodal.model import VisionCheckResult
 
 STYLE = "A cinematic fantasy illustration."
 
@@ -95,10 +96,62 @@ def generate_visual(
 
 
 
+VERIFY_INSTRUCTIONS = """You are checking an illustration against established story facts.
+For EACH fact below, judge only what is actually visible in the image:
+- "match": clearly visible and agrees with the fact.
+- "mismatch": clearly visible and contradicts the fact.
+- "unable_to_assess": hidden, too small, unclear, or not something a picture
+  can show (for example, who rules a kingdom).
+Details that the facts do not mention are NOT mismatches.
+Never guess. Copy each fact_id exactly as given."""
+
+def build_verify_prompt(canon_facts: list[CanonFact]) -> str:
+    """List the facts for the vision model, each with its id."""
+    lines = [VERIFY_INSTRUCTIONS, "", "Facts to check:"]
+    for fact in canon_facts:
+        predicate = fact.predicate.replace("_", " ")
+        lines.append(f"- {fact.id}: {fact.subject} | {predicate} | {fact.object}")
+    return "\n".join(lines)
+
 def verify_visual(
     asset: VisualAsset,
     canon_facts: list[CanonFact],
+    ai: AIClient | None = None,
 ) -> VisualReport:
     """Assess whether a generated image agrees with retrieved canon."""
-    # TODO (Saif): Inspect asset.image_path with a vision model.
-    raise NotImplementedError("Saif: implement verify_visual")
+    ai = ai or AIClient()
+
+
+
+        # 1. Ask the vision model to check every fact against the actual image
+    result = ai.analyze_image(
+        asset.image_path, build_verify_prompt(canon_facts), schema=VisionCheckResult
+    )
+
+        # 2. Keep only real mismatches about facts we actually sent
+    #    (ignores any fact_id the model invented)
+    facts_by_id = {fact.id: fact for fact in canon_facts}
+    mismatches = [
+        check
+        for check in result.checks
+        if check.status == "mismatch" and check.fact_id in facts_by_id
+    ]
+
+        # 3. Turn each mismatch into a readable issue, linked to its fact id
+    issues = []
+    for check in mismatches:
+        fact = facts_by_id[check.fact_id]
+        issues.append(
+            f"{fact.subject} {fact.predicate}: expected '{fact.object}', "
+            f"image shows '{check.observed}'. {check.explanation}"
+        )
+
+        # 4. Package everything into the shared VisualReport
+    return VisualReport(
+        image_path=asset.image_path,
+        consistent=not mismatches,
+        issues=issues,
+        evidence_fact_ids=[check.fact_id for check in mismatches],
+    )
+    
+
