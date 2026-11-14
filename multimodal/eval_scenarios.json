@@ -1,0 +1,87 @@
+{
+  "description": "Evaluation scenarios for the visual module. 'clean' scenarios are generated from canon; 'injected' scenarios are generated from deliberately wrong facts (generate_with) and then checked against the true canon, to test whether the verifier catches the error and the repair fixes it.",
+  "facts": {
+    "F001": {"subject": "Princess Amina", "predicate": "hair_color", "object": "black"},
+    "F002": {"subject": "Princess Amina", "predicate": "uses_magic", "object": "never (no spells, glowing energy or magical effects)"},
+    "F003": {"subject": "Princess Amina", "predicate": "eye_color", "object": "green"},
+    "F004": {"subject": "Princess Amina", "predicate": "armor_color", "object": "silver"},
+    "F005": {"subject": "The northern castle", "predicate": "banner_color", "object": "blue"},
+    "F006": {"subject": "Captain Arin", "predicate": "weapon", "object": "golden spear"},
+    "F007": {"subject": "Captain Arin", "predicate": "cloak_color", "object": "red"},
+    "F008": {"subject": "Queen Lyra", "predicate": "crown", "object": "silver crown"},
+    "F009": {"subject": "Queen Lyra", "predicate": "hair_color", "object": "white"},
+    "F010": {"subject": "Captain Arin", "predicate": "facial_feature", "object": "scar across his left cheek"},
+    "F011": {"subject": "Queen Lyra", "predicate": "rules", "object": "Eldoria"}
+  },
+  "scenarios": [
+    {
+      "id": "S01",
+      "kind": "clean",
+      "scene": "Princess Amina commands archers from the walls of the northern castle.",
+      "canon": ["F001", "F004", "F005"]
+    },
+    {
+      "id": "S02",
+      "kind": "clean",
+      "scene": "Princess Amina rides a horse through a snowy forest at dawn.",
+      "canon": ["F001", "F003", "F004"]
+    },
+    {
+      "id": "S03",
+      "kind": "injected",
+      "scene": "Princess Amina stands on the castle walls, watching the horizon.",
+      "canon": ["F001", "F004"],
+      "generate_with": {"F004": "gold"},
+      "note": "Generated with gold armor; canon says silver."
+    },
+    {
+      "id": "S04",
+      "kind": "clean",
+      "scene": "Captain Arin kneels before Queen Lyra in the royal throne room of Eldoria.",
+      "canon": ["F006", "F007", "F008", "F009", "F011"]
+    },
+    {
+      "id": "S05",
+      "kind": "injected",
+      "scene": "Captain Arin patrols the city walls at night.",
+      "canon": ["F006", "F007"],
+      "generate_with": {"F006": "blue wooden staff"},
+      "note": "Generated with a blue staff; canon says golden spear."
+    },
+    {
+      "id": "S06",
+      "kind": "clean",
+      "scene": "A close-up portrait of Captain Arin standing in the rain.",
+      "canon": ["F006", "F007", "F010"]
+    },
+    {
+      "id": "S07",
+      "kind": "clean",
+      "scene": "Princess Amina, seen from behind, watches the sea from a high cliff.",
+      "canon": ["F001", "F003", "F004"],
+      "note": "Her eyes should be hidden: expect unable_to_assess for F003."
+    },
+    {
+      "id": "S08",
+      "kind": "injected",
+      "scene": "Queen Lyra addresses a crowd from the palace balcony.",
+      "canon": ["F008", "F009"],
+      "generate_with": {"F009": "jet black"},
+      "note": "Generated with black hair; canon says white."
+    },
+    {
+      "id": "S09",
+      "kind": "injected",
+      "scene": "Princess Amina leads the defense as enemies storm the castle gate.",
+      "canon": ["F001", "F002", "F004"],
+      "generate_with": {"F002": "casting a bright glowing fire spell from her hands"},
+      "note": "Generated with magic; canon says she never uses magic."
+    },
+    {
+      "id": "S10",
+      "kind": "clean",
+      "scene": "Princess Amina and Captain Arin plan a battle over a map table.",
+      "canon": ["F001", "F004", "F006", "F007"]
+    }
+  ]
+}

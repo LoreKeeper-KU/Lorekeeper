@@ -60,12 +60,9 @@ INTEGRATION CONTRACT:
     Receives Abdullah's repaired story and Abdulaziz's canon.
     Keep the image path and verification result separate from story text.
 """
-from shared.ai_client import AIClient
-
-from shared.schemas import CanonFact, VisualAsset, VisualReport
-
 from multimodal.model import VisionCheckResult, VisualRepairResult
-
+from shared.ai_client import AIClient
+from shared.schemas import CanonFact, VisualAsset, VisualReport
 
 STYLE = "A cinematic fantasy illustration."
 
@@ -85,18 +82,18 @@ def build_visual_prompt(scene: str, canon_facts: list[CanonFact]) -> str:
 
 
 def generate_visual(
-        scene: str,
-        canon_facts: list[CanonFact],
-        ai: AIClient | None = None) -> VisualAsset:
+    scene: str,
+    canon_facts: list[CanonFact],
+    ai: AIClient | None = None,
+) -> VisualAsset:
     """Generate an image for a repaired scene and return its metadata."""
     ai = ai or AIClient()
     # 1. Build the prompt from the scene and facts
     prompt = build_visual_prompt(scene, canon_facts)
     # 2. Ask the AI client to generate an image from that prompt
-    image_path = ai.generate_image(prompt) 
+    image_path = ai.generate_image(prompt)
     # 3. Package the image path and prompt into a VisualAsset and return it
     return VisualAsset(image_path=image_path, prompt=prompt)
-
 
 
 VERIFY_INSTRUCTIONS = """You are checking an illustration against established story facts.
@@ -108,6 +105,7 @@ For EACH fact below, judge only what is actually visible in the image:
 Details that the facts do not mention are NOT mismatches.
 Never guess. Copy each fact_id exactly as given."""
 
+
 def build_verify_prompt(canon_facts: list[CanonFact]) -> str:
     """List the facts for the vision model, each with its id."""
     lines = [VERIFY_INSTRUCTIONS, "", "Facts to check:"]
@@ -116,22 +114,26 @@ def build_verify_prompt(canon_facts: list[CanonFact]) -> str:
         lines.append(f"- {fact.id}: {fact.subject} | {predicate} | {fact.object}")
     return "\n".join(lines)
 
-def verify_visual(
+
+def check_visual_facts(
     asset: VisualAsset,
     canon_facts: list[CanonFact],
     ai: AIClient | None = None,
-) -> VisualReport:
-    """Assess whether a generated image agrees with retrieved canon."""
+) -> VisionCheckResult:
+    """Ask the vision model for a verdict on every fact (match / mismatch / unable_to_assess)."""
     ai = ai or AIClient()
-
-
-
-        # 1. Ask the vision model to check every fact against the actual image
-    result = ai.analyze_image(
+    return ai.analyze_image(
         asset.image_path, build_verify_prompt(canon_facts), schema=VisionCheckResult
     )
 
-        # 2. Keep only real mismatches about facts we actually sent
+
+def build_visual_report(
+    asset: VisualAsset,
+    canon_facts: list[CanonFact],
+    result: VisionCheckResult,
+) -> VisualReport:
+    """Turn the vision model's verdicts into the shared VisualReport."""
+    # 1. Keep only real mismatches about facts we actually sent
     #    (ignores any fact_id the model invented)
     facts_by_id = {fact.id: fact for fact in canon_facts}
     mismatches = [
@@ -140,7 +142,7 @@ def verify_visual(
         if check.status == "mismatch" and check.fact_id in facts_by_id
     ]
 
-        # 3. Turn each mismatch into a readable issue, linked to its fact id
+    # 2. Turn each mismatch into a readable issue, linked to its fact id
     issues = []
     for check in mismatches:
         fact = facts_by_id[check.fact_id]
@@ -150,16 +152,27 @@ def verify_visual(
             f"image shows '{check.observed}'. {check.explanation}"
         )
 
-        # 4. Package everything into the shared VisualReport
+    # 3. Package everything into the shared VisualReport
     return VisualReport(
         image_path=asset.image_path,
         consistent=not mismatches,
         issues=issues,
         evidence_fact_ids=[check.fact_id for check in mismatches],
     )
-    
+
+
+def verify_visual(
+    asset: VisualAsset,
+    canon_facts: list[CanonFact],
+    ai: AIClient | None = None,
+) -> VisualReport:
+    """Assess whether a generated image agrees with retrieved canon."""
+    result = check_visual_facts(asset, canon_facts, ai)
+    return build_visual_report(asset, canon_facts, result)
+
 
 MAX_REPAIR_ATTEMPTS = 3  # stop after this many edits, to limit cost
+
 
 def build_repair_prompt(report: VisualReport, canon_facts: list[CanonFact]) -> str:
     """Tell the image model exactly what to fix, and to leave the rest alone."""
@@ -177,7 +190,6 @@ def build_repair_prompt(report: VisualReport, canon_facts: list[CanonFact]) -> s
         "lighting and art style."
     )
     return "\n".join(lines)
-
 
 
 def repair_visual(
