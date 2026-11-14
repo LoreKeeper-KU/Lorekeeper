@@ -104,7 +104,8 @@ def test_summarize_counts_agreement_and_errors(tmp_path):
     assert summary["verifier_agreement"] == (3, 4)  # 2 initial + 2 final pairs (image was repaired)
     assert summary["false_alarms"] == 1
     assert summary["missed_mismatches"] == 0
-    assert summary["injected_errors_caught"] == (1, 1)
+    assert summary["injected_errors_appeared"] == (0, 1)  # human says the gold never appeared
+    assert summary["injected_errors_caught"] == (0, 0)  # so there was nothing to catch
     assert summary["scenarios_repaired"] == 1
 
 

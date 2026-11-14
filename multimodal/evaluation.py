@@ -211,9 +211,12 @@ def summarize(results_path: Path = RESULTS_PATH) -> dict:
 
     final_human = df["human_final_status"].where(repaired, df["human_initial_status"])
 
-    # Injected errors: did the verifier flag the fact we deliberately broke?
+    # Injected errors: did the verifier flag the facts we deliberately broke?
+    # Only count injections the HUMAN confirms actually appeared in the image
+    # (the image model sometimes ignores the injected detail).
     injected = df[as_bool(df["injected"])]
-    caught = int((injected["initial_verifier"] == "mismatch").sum())
+    appeared = injected[injected["human_initial_status"] == "mismatch"]
+    caught = int((appeared["initial_verifier"] == "mismatch").sum())
 
     scenarios = df.drop_duplicates("scenario_id")
     results = {
@@ -225,7 +228,8 @@ def summarize(results_path: Path = RESULTS_PATH) -> dict:
         "missed_mismatches": missed,
         "consistency_before_repair": consistency(df["human_initial_status"]),
         "consistency_after_repair": consistency(final_human),
-        "injected_errors_caught": (caught, len(injected)),
+        "injected_errors_appeared": (len(appeared), len(injected)),
+        "injected_errors_caught": (caught, len(appeared)),
         "scenarios_repaired": int((scenarios["repair_attempts"].astype(int) > 0).sum()),
         "repaired_now_consistent": int(
             (as_bool(scenarios["final_consistent"]) & (scenarios["repair_attempts"].astype(int) > 0)).sum()
@@ -249,7 +253,8 @@ def summarize(results_path: Path = RESULTS_PATH) -> dict:
     print("\nAttribute consistency (human-judged, assessable facts only)")
     print(f"  Before repair:      {percent(*results['consistency_before_repair'])}")
     print(f"  After repair:       {percent(*results['consistency_after_repair'])}")
-    print(f"  Injected errors caught by verifier: {percent(*results['injected_errors_caught'])}")
+    print(f"  Injected errors that appeared in the image: {percent(*results['injected_errors_appeared'])}")
+    print(f"  ...and caught by the verifier:             {percent(*results['injected_errors_caught'])}")
     print("\nRepair")
     print(f"  Scenarios repaired: {results['scenarios_repaired']}"
           f"   now consistent: {results['repaired_now_consistent']}"
