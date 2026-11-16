@@ -1,3 +1,4 @@
+# Written by Abdulaziz Albastaki in October 2026
 """Shared Pydantic contracts for the LoreKeeper senior design project.
 
 All teammates import these classes instead of creating their own dictionary
