@@ -1,0 +1,190 @@
+{
+  "D1": {
+    "name": "Mireholm (gothic marsh village)",
+    "facts": [
+      {
+        "id": "mh-001",
+        "subject": "Warden Corvin Thale",
+        "predicate": "status",
+        "object": "alive"
+      },
+      {
+        "id": "mh-002",
+        "subject": "Warden Corvin Thale",
+        "predicate": "mother",
+        "object": "Odette Thale"
+      },
+      {
+        "id": "mh-003",
+        "subject": "Warden Corvin Thale",
+        "predicate": "house",
+        "object": "House Greywater"
+      },
+      {
+        "id": "mh-004",
+        "subject": "Warden Corvin Thale",
+        "predicate": "tool",
+        "object": "a brass lantern"
+      },
+      {
+        "id": "mh-005",
+        "subject": "Sister Pell",
+        "predicate": "profession",
+        "object": "village healer"
+      },
+      {
+        "id": "mh-006",
+        "subject": "Sister Pell",
+        "predicate": "pet",
+        "object": "a black cat named Soot"
+      },
+      {
+        "id": "mh-007",
+        "subject": "Mireholm",
+        "predicate": "located_in",
+        "object": "the Fenmark marshes"
+      }
+    ]
+  },
+  "D2": {
+    "name": "Kestrel Deep (mining colony)",
+    "facts": [
+      {
+        "id": "kd-001",
+        "subject": "Foreman Anaya Okoro",
+        "predicate": "father",
+        "object": "Chidi Okoro"
+      },
+      {
+        "id": "kd-002",
+        "subject": "Foreman Anaya Okoro",
+        "predicate": "allegiance",
+        "object": "Deepworks Union"
+      },
+      {
+        "id": "kd-003",
+        "subject": "Foreman Anaya Okoro",
+        "predicate": "role",
+        "object": "shift foreman"
+      },
+      {
+        "id": "kd-004",
+        "subject": "Foreman Anaya Okoro",
+        "predicate": "vehicle",
+        "object": "a tracked hauler"
+      },
+      {
+        "id": "kd-005",
+        "subject": "Technician Bo Lindqvist",
+        "predicate": "status",
+        "object": "dead"
+      },
+      {
+        "id": "kd-006",
+        "subject": "Technician Bo Lindqvist",
+        "predicate": "skill",
+        "object": "welding"
+      },
+      {
+        "id": "kd-007",
+        "subject": "Kestrel Deep",
+        "predicate": "depth",
+        "object": "four kilometres below the surface"
+      }
+    ]
+  },
+  "D3": {
+    "name": "Hanatsuki Province (feudal fantasy)",
+    "facts": [
+      {
+        "id": "hp-001",
+        "subject": "Lord Raiden Mori",
+        "predicate": "mother",
+        "object": "Lady Sumi Mori"
+      },
+      {
+        "id": "hp-002",
+        "subject": "Lord Raiden Mori",
+        "predicate": "house",
+        "object": "House Mori"
+      },
+      {
+        "id": "hp-003",
+        "subject": "Lord Raiden Mori",
+        "predicate": "allegiance",
+        "object": "the Emperor's court"
+      },
+      {
+        "id": "hp-004",
+        "subject": "Lord Raiden Mori",
+        "predicate": "status",
+        "object": "alive"
+      },
+      {
+        "id": "hp-005",
+        "subject": "Lord Raiden Mori",
+        "predicate": "weapon",
+        "object": "a curved katana"
+      },
+      {
+        "id": "hp-006",
+        "subject": "Ronin Kaito",
+        "predicate": "profession",
+        "object": "wandering swordsman"
+      },
+      {
+        "id": "hp-007",
+        "subject": "Hanatsuki Province",
+        "predicate": "capital",
+        "object": "Shirokawa"
+      }
+    ]
+  },
+  "D4": {
+    "name": "Neon Quay (cyberpunk harbour city)",
+    "facts": [
+      {
+        "id": "nq-001",
+        "subject": "Fixer Zara Quade",
+        "predicate": "mother",
+        "object": "Marguerite Quade"
+      },
+      {
+        "id": "nq-002",
+        "subject": "Fixer Zara Quade",
+        "predicate": "status",
+        "object": "alive"
+      },
+      {
+        "id": "nq-003",
+        "subject": "Fixer Zara Quade",
+        "predicate": "allegiance",
+        "object": "the Harbour Syndicate"
+      },
+      {
+        "id": "nq-004",
+        "subject": "Fixer Zara Quade",
+        "predicate": "tool",
+        "object": "a signal jammer"
+      },
+      {
+        "id": "nq-005",
+        "subject": "Courier Dax",
+        "predicate": "hacking_skill",
+        "object": "none"
+      },
+      {
+        "id": "nq-006",
+        "subject": "Neon Quay",
+        "predicate": "ruled_by",
+        "object": "the Harbour Syndicate"
+      },
+      {
+        "id": "nq-007",
+        "subject": "Fixer Zara Quade",
+        "predicate": "father",
+        "object": "Rafael Quade"
+      }
+    ]
+  }
+}

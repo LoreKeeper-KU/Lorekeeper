@@ -1,0 +1,65 @@
+{
+  "W1": {
+    "name": "Helios Station (space station)",
+    "facts": [
+      {"id": "hs-001", "subject": "Commander Ilsa Voss", "predicate": "status", "object": "alive"},
+      {"id": "hs-002", "subject": "Commander Ilsa Voss", "predicate": "species", "object": "human"},
+      {"id": "hs-003", "subject": "Commander Ilsa Voss", "predicate": "father", "object": "Tomas Voss"},
+      {"id": "hs-004", "subject": "Commander Ilsa Voss", "predicate": "allegiance", "object": "United Orbital Command"},
+      {"id": "hs-005", "subject": "Dr. Teo Marek", "predicate": "species", "object": "android"},
+      {"id": "hs-006", "subject": "Dr. Teo Marek", "predicate": "tool", "object": "a medical scanner"},
+      {"id": "hs-007", "subject": "Helios Station", "predicate": "orbits", "object": "Jupiter"},
+      {"id": "hs-008", "subject": "Dr. Teo Marek", "predicate": "combat_training", "object": "none"}
+    ]
+  },
+  "W2": {
+    "name": "Port Calder (noir port city)",
+    "facts": [
+      {"id": "pc-001", "subject": "Victor Ashe", "predicate": "status", "object": "dead"},
+      {"id": "pc-002", "subject": "Inspector Nora Quill", "predicate": "birthplace", "object": "Port Calder"},
+      {"id": "pc-003", "subject": "Inspector Nora Quill", "predicate": "eye_color", "object": "grey"},
+      {"id": "pc-004", "subject": "Inspector Nora Quill", "predicate": "mother", "object": "Delia Quill"},
+      {"id": "pc-005", "subject": "Inspector Nora Quill", "predicate": "allegiance", "object": "Port Calder Police"},
+      {"id": "pc-006", "subject": "Inspector Nora Quill", "predicate": "weapon", "object": "a revolver"},
+      {"id": "pc-007", "subject": "Marlowe's Bar", "predicate": "located_in", "object": "the harbour district"},
+      {"id": "pc-008", "subject": "Victor Ashe", "predicate": "occupation", "object": "shipping clerk"}
+    ]
+  },
+  "W3": {
+    "name": "Thornwick Academy (magic school)",
+    "facts": [
+      {"id": "ta-001", "subject": "Elara Finch", "predicate": "species", "object": "elf"},
+      {"id": "ta-002", "subject": "Elara Finch", "predicate": "magic_ability", "object": "none"},
+      {"id": "ta-003", "subject": "Professor Bram Holt", "predicate": "status", "object": "alive"},
+      {"id": "ta-004", "subject": "Professor Bram Holt", "predicate": "teaches", "object": "alchemy"},
+      {"id": "ta-005", "subject": "Professor Bram Holt", "predicate": "pet", "object": "a raven named Ash"},
+      {"id": "ta-006", "subject": "Elara Finch", "predicate": "father", "object": "Aldric Finch"},
+      {"id": "ta-007", "subject": "Thornwick Academy", "predicate": "founded_by", "object": "Magister Orlen"},
+      {"id": "ta-008", "subject": "Elara Finch", "predicate": "house", "object": "House Lumen"}
+    ]
+  },
+  "W4": {
+    "name": "The Ashlands (post-apocalyptic wasteland)",
+    "facts": [
+      {"id": "al-001", "subject": "Warlord Kessen", "predicate": "status", "object": "dead"},
+      {"id": "al-002", "subject": "Mara Dunn", "predicate": "father", "object": "Eli Dunn"},
+      {"id": "al-003", "subject": "Mara Dunn", "predicate": "mechanical_skill", "object": "none"},
+      {"id": "al-004", "subject": "Mara Dunn", "predicate": "vehicle", "object": "a dune buggy"},
+      {"id": "al-005", "subject": "Mara Dunn", "predicate": "home", "object": "Cinder Wells"},
+      {"id": "al-006", "subject": "Cinder Wells", "predicate": "water_source", "object": "a deep well"},
+      {"id": "al-007", "subject": "Warlord Kessen", "predicate": "weapon", "object": "a rusted cleaver"}
+    ]
+  },
+  "W5": {
+    "name": "Kharsa Caravans (desert trade routes)",
+    "facts": [
+      {"id": "kc-001", "subject": "Sheikh Idris", "predicate": "birthplace", "object": "Kharsa"},
+      {"id": "kc-002", "subject": "Sheikh Idris", "predicate": "status", "object": "alive"},
+      {"id": "kc-003", "subject": "Sheikh Idris", "predicate": "mother", "object": "Nadira"},
+      {"id": "kc-004", "subject": "Navigator Yusra", "predicate": "profession", "object": "caravan navigator"},
+      {"id": "kc-005", "subject": "Navigator Yusra", "predicate": "allegiance", "object": "Kharsa Caravan Guild"},
+      {"id": "kc-006", "subject": "The Golden Caravan", "predicate": "travels", "object": "between Kharsa and Tamar"},
+      {"id": "kc-007", "subject": "Sheikh Idris", "predicate": "camel", "object": "a white camel named Zahra"}
+    ]
+  }
+}

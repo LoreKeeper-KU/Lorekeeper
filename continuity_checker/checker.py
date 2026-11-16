@@ -82,11 +82,33 @@ INTEGRATION CONTRACT:
     Output goes to Abdullah for self-repair.
 """
 
+from typing import Optional
+
+from continuity_checker.canon_verifier import CanonVerifier
+from continuity_checker.models import Scene
 from shared.schemas import CanonFact, VerificationReport
+
+# Temporary wiring until the shared AI client exists: the app (or a test) registers a
+# fully built CanonVerifier. This module never creates an LLM client of its own.
+_verifier: Optional[CanonVerifier] = None
+
+
+class VerifierNotConfiguredError(RuntimeError):
+    """verify_scene() was called before a CanonVerifier was registered."""
+
+
+def configure_verifier(verifier: Optional[CanonVerifier]) -> None:
+    """Register the CanonVerifier used by verify_scene(); pass None to clear it."""
+    global _verifier
+    _verifier = verifier
 
 
 def verify_scene(scene: str, canon_facts: list[CanonFact]) -> VerificationReport:
     """Return one ClaimAssessment for each distinct claim in the scene."""
-    # TODO (Faris): Extract claims and check each against canon.
-    # TODO (Faris): Return VerificationReport(claims=[...]).
-    raise NotImplementedError("Faris: implement verify_scene")
+    if _verifier is None:
+        raise VerifierNotConfiguredError(
+            "No verifier is configured. Call continuity_checker.checker."
+            "configure_verifier(CanonVerifier(...)) before verify_scene()."
+        )
+    # The team contract passes plain text, so the internal Scene gets placeholder IDs.
+    return _verifier.verify_scene(Scene(scene_id="scene", world_id="world", text=scene), canon_facts)

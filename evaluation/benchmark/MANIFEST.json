@@ -1,0 +1,8 @@
+{
+  "claim_count": 52,
+  "sha256": {
+    "worlds.json": "d5519a679b2a030f67c314608a9a4278561190e8d7a5e9c867153c114246154d",
+    "claims.jsonl": "245dcfc5636c4dac5bd4dc2c03e3be820466d1465a12e9176b73960de793f34e",
+    "LABELLING_POLICY.md": "17a9fa9ec8b4c522a130dadbe6292790d8f88bb866812b53846efbb2900e37fb"
+  }
+}
