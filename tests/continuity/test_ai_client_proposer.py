@@ -1,3 +1,4 @@
+# Authored by Faris
 """Claim extraction through the shared AIClient (no real API calls).
 
 Most tests inject a fake client with the one method the adapter uses. One test runs the

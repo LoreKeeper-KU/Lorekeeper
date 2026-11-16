@@ -1,3 +1,4 @@
+# Authored by Faris
 """AdditionJudge: is a neutral claim a safe candidate for a Valid New Addition?
 
 Only called by ContradictionClassifier for a claim that no canon fact supports and that

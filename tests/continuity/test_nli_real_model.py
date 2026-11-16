@@ -1,3 +1,4 @@
+# Authored by Faris
 """Smoke checks against the real NLI model. Run with: python -m pytest -m model"""
 
 import pytest

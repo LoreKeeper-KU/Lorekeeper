@@ -1,3 +1,4 @@
+# Authored by Faris
 """Internal models for the continuity checker, plus the team contracts it uses.
 
 Scene, SourceSpan, Claim and VerifiedClaim exist only inside this module: they carry

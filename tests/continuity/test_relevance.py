@@ -1,3 +1,4 @@
+# Authored by Faris
 from continuity_checker.models import CanonFact, Claim, SourceSpan
 from continuity_checker.relevance import select_relevant_facts
 

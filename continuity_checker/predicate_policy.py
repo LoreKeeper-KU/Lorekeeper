@@ -1,3 +1,4 @@
+# Authored by Faris
 """Which canon facts rule out other values, so that a conflict with them can count.
 
 A CanonFact is not necessarily exclusive: "weapon=golden spear" does not prove Arin

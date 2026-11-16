@@ -1,3 +1,4 @@
+# Authored by Faris
 """Pick the canon facts worth comparing with a claim.
 
 A fact is relevant when the claim shares at least one content word with the fact's

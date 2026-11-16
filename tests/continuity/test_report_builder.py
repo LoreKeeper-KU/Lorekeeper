@@ -1,3 +1,4 @@
+# Authored by Faris
 from continuity_checker.models import (
     ClaimClassification,
     SourceSpan,

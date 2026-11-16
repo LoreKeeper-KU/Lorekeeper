@@ -1,3 +1,4 @@
+# Authored by Faris
 from continuity_checker.canon_verifier import CanonVerifier, Verdict
 from continuity_checker.claim_extractor import ClaimExtractor, ProposedClaim
 from continuity_checker.contradiction_classifier import ContradictionClassifier

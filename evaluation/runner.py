@@ -1,3 +1,4 @@
+# Authored by Faris
 """Run the frozen benchmark through the continuity-verification pipeline and save the results.
 
 Claim extraction is excluded on purpose: every benchmark record is already one atomic claim, so

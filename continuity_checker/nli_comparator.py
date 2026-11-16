@@ -1,3 +1,4 @@
+# Authored by Faris
 from collections.abc import Callable, Sequence
 
 from continuity_checker.canon_verifier import Verdict, fact_to_premise

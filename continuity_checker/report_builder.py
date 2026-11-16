@@ -1,3 +1,4 @@
+# Authored by Faris
 """Convert internal VerifiedClaims into the team's public VerificationReport.
 
 The team report has no field for claim IDs, source spans or suggested actions, so they

@@ -1,3 +1,4 @@
+# Authored by Faris
 """LLMAdditionJudge: decides whether a neutral claim is a safe candidate new addition.
 
 No real API calls: a fake client stands in for the shared AIClient.

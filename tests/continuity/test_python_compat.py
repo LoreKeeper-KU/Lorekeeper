@@ -1,7 +1,8 @@
+# Authored by Faris
 import ast
 import pathlib
 
-PACKAGE = pathlib.Path(__file__).resolve().parents[1] / "continuity_checker"
+PACKAGE = pathlib.Path(__file__).resolve().parents[2] / "continuity_checker"
 PYTHON_311_ONLY = ["StrEnum", "tomllib", "ExceptionGroup", "typing import Self"]
 
 

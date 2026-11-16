@@ -1,3 +1,4 @@
+# Authored by Faris
 import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer

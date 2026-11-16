@@ -1,3 +1,4 @@
+# Authored by Faris
 """Metrics for the four-class continuity benchmark (scikit-learn does the counting)."""
 
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_recall_fscore_support

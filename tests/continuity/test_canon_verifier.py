@@ -1,3 +1,4 @@
+# Authored by Faris
 from continuity_checker.canon_verifier import Verdict, compare_claim, fact_to_premise
 from continuity_checker.models import CanonFact, Claim, SourceSpan
 

@@ -1,3 +1,4 @@
+# Authored by Faris
 """Load, validate and freeze the continuity-verification benchmark.
 
 The benchmark is data only: fictional worlds (lists of the team's CanonFact) and manually

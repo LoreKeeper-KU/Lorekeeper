@@ -1,3 +1,4 @@
+# Authored by Faris
 import pytest
 
 from continuity_checker.claim_extractor import ClaimExtractor, ProposedClaim, locate_span
