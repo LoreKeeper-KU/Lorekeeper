@@ -14,7 +14,9 @@ from shared.schemas import VerificationReport
 
 from .models import DemoRequest, PipelineResult, Scene
 from .story_generator import generate_scene, repair_scene
-from .team_stubs import retrieve_canon, verify_scene
+
+from .team_stubs import retrieve_canon
+from continuity_checker.checker import verify_scene
 
 
 def run_pipeline(request: DemoRequest) -> PipelineResult:
@@ -78,9 +80,8 @@ def run_pipeline(request: DemoRequest) -> PipelineResult:
 
         reports.append(report)
 
-        # An empty or uncertain report needs user review.
-        # Zero detected contradictions alone does not establish success.
-        if not report.claims or report.summary.uncertain > 0:
+        # An empty report cannot establish consistency.
+        if not report.claims:
             return PipelineResult(
                 status="needs_review",
                 initial_scene=initial_scene,
@@ -89,16 +90,23 @@ def run_pipeline(request: DemoRequest) -> PipelineResult:
                 repair_attempts=repair_attempts,
             )
 
-        # No contradictions or uncertainty remain in this report.
-        # This does not automatically approve new facts for canon.
+        # When no contradictions remain, decide whether uncertainty
+        # still requires a person's review.
         if report.summary.contradictions == 0:
             return PipelineResult(
-                status="verified",
+                status=(
+                    "needs_review"
+                    if report.summary.uncertain > 0
+                    else "verified"
+                ),
                 initial_scene=initial_scene,
                 final_scene=current_scene,
                 reports=reports,
                 repair_attempts=repair_attempts,
             )
+
+        # Contradictions remain, so continue to the repair-limit
+        # check and repair code below, even if other claims are uncertain.
 
         # Check the limit AFTER verification so the final repair
         # always gets rechecked before the workflow stops.
@@ -120,6 +128,17 @@ def run_pipeline(request: DemoRequest) -> PipelineResult:
 
         # Count this repair exactly once.
         repair_attempts += 1
+
+                # Stop if the repair function made no change.
+        # The current report already describes this unchanged scene.
+        if repaired_text == current_scene.text:
+            return PipelineResult(
+                status="needs_review",
+                initial_scene=initial_scene,
+                final_scene=current_scene,
+                reports=reports,
+                repair_attempts=repair_attempts,
+            )
 
         # Create a new revision without overwriting the original scene.
         current_scene = Scene(

@@ -22,8 +22,8 @@ def retrieve_canon(query: str) -> list[CanonFact]:
         CanonFact(
             id="fact-001",
             subject="Princess Amina",
-            predicate="ability",
-            object="no magical ability",
+            predicate="magic_ability",
+            object="none",
         ),
         CanonFact(
             id="fact-002",
@@ -56,8 +56,8 @@ def verify_scene(
             fact
             for fact in canon_facts
             if fact.subject == "Princess Amina"
-            and fact.predicate == "ability"
-            and fact.object == "no magical ability"
+            and fact.predicate == "magic_ability"
+            and fact.object == "none"
         ),
         None,
     )
