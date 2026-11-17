@@ -1,0 +1,190 @@
+{
+  "H1": {
+    "name": "Brightwater Observatory (coastal science)",
+    "facts": [
+      {
+        "id": "bw-001",
+        "subject": "Astronomer Lucian Ferrante",
+        "predicate": "status",
+        "object": "alive"
+      },
+      {
+        "id": "bw-002",
+        "subject": "Astronomer Lucian Ferrante",
+        "predicate": "father",
+        "object": "Enzo Ferrante"
+      },
+      {
+        "id": "bw-003",
+        "subject": "Astronomer Lucian Ferrante",
+        "predicate": "instrument",
+        "object": "a bronze refractor"
+      },
+      {
+        "id": "bw-004",
+        "subject": "Astronomer Lucian Ferrante",
+        "predicate": "specialty",
+        "object": "variable stars"
+      },
+      {
+        "id": "bw-005",
+        "subject": "Archivist Priya Nandakumar",
+        "predicate": "role",
+        "object": "keeper of the star charts"
+      },
+      {
+        "id": "bw-006",
+        "subject": "Archivist Priya Nandakumar",
+        "predicate": "allegiance",
+        "object": "the Meridian Society"
+      },
+      {
+        "id": "bw-007",
+        "subject": "Brightwater Observatory",
+        "predicate": "located_on",
+        "object": "Gull Hill"
+      }
+    ]
+  },
+  "H2": {
+    "name": "The Ember Throne (dynastic fantasy)",
+    "facts": [
+      {
+        "id": "et-001",
+        "subject": "Prince Tavian Orsolo",
+        "predicate": "house",
+        "object": "House Veyra"
+      },
+      {
+        "id": "et-002",
+        "subject": "Prince Tavian Orsolo",
+        "predicate": "mother",
+        "object": "Queen Aldith"
+      },
+      {
+        "id": "et-003",
+        "subject": "Prince Tavian Orsolo",
+        "predicate": "status",
+        "object": "alive"
+      },
+      {
+        "id": "et-004",
+        "subject": "Prince Tavian Orsolo",
+        "predicate": "hobby",
+        "object": "falconry"
+      },
+      {
+        "id": "et-005",
+        "subject": "Chancellor Merrin Dask",
+        "predicate": "role",
+        "object": "keeper of the royal seal"
+      },
+      {
+        "id": "et-006",
+        "subject": "Chancellor Merrin Dask",
+        "predicate": "magic_ability",
+        "object": "none"
+      },
+      {
+        "id": "et-007",
+        "subject": "The Ember Throne",
+        "predicate": "made_of",
+        "object": "blackened iron"
+      }
+    ]
+  },
+  "H3": {
+    "name": "Saltwind Isles (seafaring)",
+    "facts": [
+      {
+        "id": "si-001",
+        "subject": "Captain Marisol Quint",
+        "predicate": "allegiance",
+        "object": "the Admiralty of Saltwind"
+      },
+      {
+        "id": "si-002",
+        "subject": "Captain Marisol Quint",
+        "predicate": "ship",
+        "object": "the sloop Heron"
+      },
+      {
+        "id": "si-003",
+        "subject": "Captain Marisol Quint",
+        "predicate": "home_port",
+        "object": "Windmere Landing"
+      },
+      {
+        "id": "si-004",
+        "subject": "Quartermaster Fenn Hadley",
+        "predicate": "status",
+        "object": "dead"
+      },
+      {
+        "id": "si-005",
+        "subject": "Quartermaster Fenn Hadley",
+        "predicate": "duty",
+        "object": "keeping the ship's stores"
+      },
+      {
+        "id": "si-006",
+        "subject": "The Heron",
+        "predicate": "crew_size",
+        "object": "forty sailors"
+      },
+      {
+        "id": "si-007",
+        "subject": "Saltwind Isles",
+        "predicate": "climate",
+        "object": "stormy and windy"
+      }
+    ]
+  },
+  "H4": {
+    "name": "The Cobalt Circus (travelling show)",
+    "facts": [
+      {
+        "id": "cc-001",
+        "subject": "Ringmaster Aurelio Bastien",
+        "predicate": "birthplace",
+        "object": "Valmora"
+      },
+      {
+        "id": "cc-002",
+        "subject": "Ringmaster Aurelio Bastien",
+        "predicate": "father",
+        "object": "Ignatius Bastien"
+      },
+      {
+        "id": "cc-003",
+        "subject": "Ringmaster Aurelio Bastien",
+        "predicate": "status",
+        "object": "alive"
+      },
+      {
+        "id": "cc-004",
+        "subject": "Ringmaster Aurelio Bastien",
+        "predicate": "costume",
+        "object": "a crimson coat"
+      },
+      {
+        "id": "cc-005",
+        "subject": "Acrobat Nell Okonkwo",
+        "predicate": "juggling_skill",
+        "object": "none"
+      },
+      {
+        "id": "cc-006",
+        "subject": "Acrobat Nell Okonkwo",
+        "predicate": "act",
+        "object": "the high wire"
+      },
+      {
+        "id": "cc-007",
+        "subject": "The Cobalt Circus",
+        "predicate": "winters_in",
+        "object": "Estrel Cove"
+      }
+    ]
+  }
+}

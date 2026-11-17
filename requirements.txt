@@ -11,5 +11,8 @@ pydantic>=2.11.7
 # Environment variables / API keys
 python-dotenv>=1.2.1
 
+# Graph analysis
+networkx
+
 # Testing
 pytest>=8.4.2

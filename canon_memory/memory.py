@@ -1,3 +1,5 @@
+# Written by Abdulaziz Albastaki in October 2026
+
 """LoreKeeper / CANON MEMORY (Owner: Abdulaziz)
 =================================================
 Purpose:
