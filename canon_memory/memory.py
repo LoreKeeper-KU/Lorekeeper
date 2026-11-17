@@ -1,61 +1,44 @@
 # Written by Abdulaziz Albastaki in October 2026
+import re
 
-"""LoreKeeper / CANON MEMORY (Owner: Abdulaziz)
-=================================================
-Purpose:
-    Store accepted world facts and retrieve relevant facts for a story
-    scene. You own *retrieval*, not claim verification or story repair.
-
-EXAMPLE INPUT TO add_fact():
-    CanonFact(
-        id="fact-001",
-        subject="Captain Arin",
-        predicate="weapon",
-        object="golden spear",
-    )
-
-EXAMPLE INPUT TO retrieve_canon():
-    query = "Captain Arin meets Queen Lyra in Eldoria and recalls his father"
-
-EXPECTED OUTPUT FROM retrieve_canon() (illustrative):
-    [
-        CanonFact(
-            id="fact-001", subject="Captain Arin",
-            predicate="weapon", object="golden spear"
-        ),
-        CanonFact(
-            id="fact-002", subject="Queen Lyra",
-            predicate="rules", object="Eldoria"
-        ),
-        CanonFact(
-            id="fact-003", subject="Captain Arin's father",
-            predicate="status", object="alive"
-        ),
-    ]
-
-YOUR TODOs:
-    1. Choose how to persist canon (e.g. SQLite for facts).
-    2. Implement add_fact() and retrieve_canon().
-    3. Add relationship-aware retrieval (e.g. NetworkX/graph queries).
-    4. Optionally add semantic retrieval (e.g. ChromaDB).
-    5. Write tests that verify relevant facts are returned.
-
-INTEGRATION CONTRACT:
-    Faris and Abdullah consume list[CanonFact] from retrieve_canon().
-    Saif can use the same facts to keep visuals consistent.
-    Do not change the public function signatures without team agreement.
-"""
-
+from canon_memory.canon_retriever import retrieve_by_entities
+from canon_memory.canon_store import CanonStore
 from shared.schemas import CanonFact
+
+DEFAULT_WORLD_ID = "world_001"
+
+ENTITY_ALIASES = {
+    "amina": "char_amina",
+    "khalid": "char_khalid",
+    "northern kingdom": "loc_northern_kingdom",
+}
 
 
 def add_fact(fact: CanonFact) -> None:
-    """Persist one new accepted canon fact; raise on invalid/duplicate data."""
-    # TODO (Abdulaziz): Save to your selected storage backend.
-    raise NotImplementedError("Abdulaziz: implement add_fact")
+    """Persist one accepted canon fact."""
+    CanonStore().add_fact(DEFAULT_WORLD_ID, fact)
 
 
 def retrieve_canon(query: str) -> list[CanonFact]:
-    """Retrieve the canon facts most relevant to a scene or question."""
-    # TODO (Abdulaziz): Return CanonFact objects, not raw dictionaries.
-    raise NotImplementedError("Abdulaziz: implement retrieve_canon")
+    """Retrieve canon facts involving known entities named in the query."""
+    entity_ids = [
+        entity_id
+        for name, entity_id in ENTITY_ALIASES.items()
+        if re.search(rf"\b{re.escape(name)}\b", query, flags=re.IGNORECASE)
+    ]
+
+    if not entity_ids:
+        return []
+
+    return retrieve_by_entities(CanonStore(), DEFAULT_WORLD_ID, entity_ids)
+
+def propose_update(fact: CanonFact) -> str:
+    return CanonStore().propose_update(DEFAULT_WORLD_ID, fact)
+
+def propose_revision(revised_fact: CanonFact) -> str:
+    """Propose an edit to an existing fact in the default world."""
+    return CanonStore().propose_revision(DEFAULT_WORLD_ID, revised_fact)
+
+
+def approve_update(proposal_id: str) -> None:
+    CanonStore().approve_update(proposal_id)
