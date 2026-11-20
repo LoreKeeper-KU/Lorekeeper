@@ -1,0 +1,280 @@
+/* LoreKeeper UI stylesheet.
+   Sections: 1 tokens · 2 app shell · 3 sidebar · 4 welcome · 5 chat · 6 scene card ·
+   7 canon check · 8 claim cards · 9 artwork · 10 composer · 11 widgets · 12 responsive.
+   Streamlit's own theme lives in .streamlit/config.toml; this adds the finer styling. */
+
+/* 1. Tokens ---------------------------------------------------------------- */
+:root {
+  --lk-bg: #0e0e11;
+  --lk-surface: #15151a;
+  --lk-surface-2: #1c1c23;
+  --lk-border: #2a2a33;
+  --lk-text: #ece8e1;
+  --lk-muted: #9b968d;
+  --lk-crimson: #9b1c31;
+  --lk-crimson-bright: #c2294a;
+  --lk-crimson-deep: #5c1220;
+  --lk-gold: #c2a45d;
+  --lk-gold-dim: #8c7740;
+  --lk-supported: #5fae7e;
+  --lk-contradiction: #e5534b;
+  --lk-addition: #6f95d9;
+  --lk-uncertain: #e08a3c;
+  --lk-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --lk-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --lk-radius: 14px;
+}
+
+/* 2. App shell ------------------------------------------------------------- */
+.stApp {
+  background:
+    radial-gradient(900px 480px at 50% -8%, rgba(155, 28, 49, 0.16), transparent 70%),
+    var(--lk-bg);
+  color: var(--lk-text);
+  font-family: var(--lk-sans);
+}
+[data-testid="stHeader"] { background: transparent; }
+[data-testid="stAppDeployButton"], .stDeployButton, footer,
+[data-testid="stSkillsNudge"], [data-testid="stSkillsNudgeAnchor"] { display: none !important; }
+.block-container, [data-testid="stMainBlockContainer"] {
+  max-width: 860px;
+  padding: 2rem 1.5rem 9rem;
+}
+.lk-eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lk-gold);
+}
+.lk-muted { color: var(--lk-muted); }
+
+/* 3. Sidebar --------------------------------------------------------------- */
+[data-testid="stSidebar"] {
+  background: var(--lk-surface);
+  border-right: 1px solid var(--lk-border);
+}
+[data-testid="stSidebarUserContent"] > div {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 6rem);
+}
+[data-testid="stSidebarUserContent"] > div > [data-testid="stVerticalBlock"] { flex: 1 1 auto; }
+.lk-brand { display: flex; align-items: center; gap: 0.75rem; padding: 0.25rem 0 1rem; }
+.lk-brand__name { font-family: var(--lk-serif); font-size: 1.4rem; letter-spacing: 0.02em; line-height: 1.1; }
+.lk-brand__tag { font-size: 0.66rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--lk-gold); margin-top: 0.15rem; }
+[class*="st-key-new_session"] button, [class*="st-key-new-session"] button {
+  width: 100%;
+  justify-content: flex-start;
+  background: transparent;
+  border: 1px solid var(--lk-border);
+  color: var(--lk-text);
+  border-radius: 10px;
+  padding: 0.55rem 0.9rem;
+}
+[class*="st-key-new_session"] button:hover, [class*="st-key-new-session"] button:hover {
+  border-color: var(--lk-crimson-bright);
+  background: rgba(155, 28, 49, 0.14);
+  color: var(--lk-text);
+}
+.lk-section-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--lk-gold);
+  margin: 1.5rem 0 0.5rem;
+}
+.lk-nav-item {
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--lk-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lk-nav-item::before { content: "❖"; color: var(--lk-gold-dim); font-size: 0.7rem; margin-right: 0.55rem; }
+.lk-nav-item--active { background: var(--lk-surface-2); border: 1px solid var(--lk-border); }
+.lk-nav-hint { padding: 0.3rem 0.7rem; font-size: 0.78rem; color: var(--lk-muted); }
+/* Pin the settings to the bottom: newer Streamlit wraps keyed blocks in a layout wrapper. */
+[class*="st-key-sidebar-settings"],
+[data-testid="stLayoutWrapper"]:has(> [class*="st-key-sidebar-settings"]) { margin-top: auto; }
+[class*="st-key-sidebar-settings"] { padding-top: 1.5rem; }
+
+/* 4. Welcome --------------------------------------------------------------- */
+.lk-welcome { text-align: center; padding: 6vh 0 2rem; }
+.lk-welcome__logo { filter: drop-shadow(0 6px 24px rgba(155, 28, 49, 0.55)); }
+.lk-welcome__title { font-family: var(--lk-serif); font-size: 3rem; letter-spacing: 0.03em; margin-top: 0.8rem; line-height: 1.1; }
+.lk-welcome__tagline { font-family: var(--lk-serif); font-style: italic; font-size: 1.35rem; color: var(--lk-gold); margin-top: 0.5rem; }
+.lk-welcome__sub { color: var(--lk-muted); max-width: 34rem; margin: 0.9rem auto 0; line-height: 1.6; }
+[class*="st-key-suggest_"] { width: 100% !important; }
+[class*="st-key-suggest_"] button {
+  width: 100%;
+  min-height: 5.2rem;
+  justify-content: flex-start;
+  text-align: left;
+  background: var(--lk-surface);
+  border: 1px solid var(--lk-border);
+  border-radius: var(--lk-radius);
+  color: var(--lk-text);
+  padding: 1rem 1.2rem;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+[class*="st-key-suggest_"] button:hover {
+  border-color: var(--lk-gold-dim);
+  background: var(--lk-surface-2);
+  transform: translateY(-1px);
+  color: var(--lk-text);
+}
+[class*="st-key-suggest_"] button > div { width: 100%; justify-content: flex-start; gap: 0.85rem; }
+[class*="st-key-suggest_"] button p { display: block; text-align: left; margin: 0; line-height: 1.45; }
+[class*="st-key-suggest_"] button p:first-child { font-weight: 600; margin-bottom: 0.2rem; }
+[class*="st-key-suggest_"] button p:not(:first-child) { color: var(--lk-muted); font-size: 0.85rem; }
+
+/* 5. Chat ------------------------------------------------------------------ */
+[data-testid="stChatMessage"] { background: transparent; padding: 0.7rem 0; gap: 0.9rem; }
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
+  background: var(--lk-surface-2);
+  border: 1px solid var(--lk-border);
+  border-radius: var(--lk-radius);
+  padding: 0.8rem 1rem;
+  margin-top: 0.6rem;
+}
+[data-testid="stChatMessageAvatarUser"] {
+  background: var(--lk-surface);
+  border: 1px solid var(--lk-border);
+  color: var(--lk-gold);
+}
+[data-testid="stChatMessageAvatarAssistant"] {
+  background: linear-gradient(160deg, var(--lk-crimson-bright), var(--lk-crimson-deep));
+  border: 1px solid var(--lk-gold-dim);
+}
+
+/* 6. Scene card ------------------------------------------------------------ */
+[class*="st-key-scene-"], [class*="st-key-original-"] {
+  background: linear-gradient(180deg, var(--lk-surface-2), var(--lk-surface));
+  border: 1px solid var(--lk-border);
+  border-top: 2px solid var(--lk-gold-dim);
+  border-radius: var(--lk-radius);
+  padding: 1.1rem 1.5rem 0.9rem;
+}
+[class*="st-key-scene-"] [data-testid="stMarkdownContainer"] p,
+[class*="st-key-original-"] [data-testid="stMarkdownContainer"] p {
+  font-family: var(--lk-serif);
+  font-size: 1.1rem;
+  line-height: 1.85;
+}
+[class*="st-key-original-"] { opacity: 0.85; border-top-color: var(--lk-border); }
+.lk-scene__meta { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; margin-bottom: 0.5rem; }
+
+/* 7. Canon check ----------------------------------------------------------- */
+.lk-canon {
+  display: inline-block;
+  margin: 0.9rem 0 0.4rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--lk-border);
+  border-left: 3px solid var(--lk-muted);
+  border-radius: 10px;
+  background: var(--lk-surface);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.lk-canon--verified { border-left-color: var(--lk-supported); }
+.lk-canon--review { border-left-color: var(--lk-uncertain); }
+.lk-canon--error { border-left-color: var(--lk-contradiction); }
+.lk-canon--skipped { color: var(--lk-muted); font-weight: 500; }
+.lk-steps { display: flex; flex-wrap: wrap; gap: 0.4rem 0; list-style: none; padding: 0; margin: 0.3rem 0 0.7rem; }
+.lk-step { display: flex; align-items: center; font-size: 0.82rem; color: var(--lk-muted); }
+.lk-step::before { content: ""; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--lk-supported); margin-right: 0.45rem; }
+.lk-step:not(:last-child)::after { content: "→"; margin: 0 0.7rem; color: var(--lk-gold-dim); }
+.lk-step--alert::before { background: var(--lk-contradiction); }
+.lk-step--review::before { background: var(--lk-uncertain); }
+.lk-step--done:last-child { color: var(--lk-text); font-weight: 600; }
+.lk-pass { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; margin: 0.9rem 0 0.5rem; }
+.lk-pass__title { font-weight: 600; font-size: 0.9rem; }
+.lk-counts { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.lk-count { font-size: 0.74rem; padding: 0.12rem 0.55rem; border-radius: 999px; border: 1px solid var(--lk-border); color: var(--lk-text); }
+.lk-count--zero { color: var(--lk-muted); opacity: 0.65; }
+.lk-chip--supported, .lk-count--supported:not(.lk-count--zero) { color: var(--lk-supported); border-color: rgba(95, 174, 126, 0.45); }
+.lk-chip--contradiction, .lk-count--contradiction:not(.lk-count--zero) { color: var(--lk-contradiction); border-color: rgba(229, 83, 75, 0.5); }
+.lk-chip--valid-new-addition, .lk-count--valid-new-addition:not(.lk-count--zero) { color: var(--lk-addition); border-color: rgba(111, 149, 217, 0.5); }
+.lk-chip--uncertain, .lk-count--uncertain:not(.lk-count--zero) { color: var(--lk-uncertain); border-color: rgba(224, 138, 60, 0.5); }
+
+/* 8. Claim cards ----------------------------------------------------------- */
+[class*="st-key-claim-"] {
+  background: var(--lk-surface);
+  border: 1px solid var(--lk-border);
+  border-left: 3px solid var(--lk-muted);
+  border-radius: 12px;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 0.5rem;
+}
+[class*="st-key-claim-supported-"] { border-left-color: var(--lk-supported); }
+[class*="st-key-claim-contradiction-"] { border-left-color: var(--lk-contradiction); }
+[class*="st-key-claim-valid-new-addition-"] { border-left-color: var(--lk-addition); }
+[class*="st-key-claim-uncertain-"] { border-left-color: var(--lk-uncertain); }
+[class*="st-key-claim-"] [data-testid="stMarkdownContainer"] p { margin: 0.25rem 0; color: var(--lk-muted); font-size: 0.92rem; }
+[class*="st-key-claim-"] [data-testid="stMarkdownContainer"] strong { color: var(--lk-text); font-size: 1rem; }
+.lk-claim__meta { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.2rem; }
+.lk-chip {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--lk-border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.lk-chip--repaired { color: var(--lk-gold); border-color: var(--lk-gold-dim); letter-spacing: 0.04em; }
+.lk-chip--unresolved { color: var(--lk-contradiction); border-color: rgba(229, 83, 75, 0.5); letter-spacing: 0.04em; }
+.lk-evidence { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 0.4rem; font-size: 0.8rem; }
+.lk-evidence__label { color: var(--lk-muted); margin-right: 0.2rem; }
+.lk-fact { font-size: 0.78rem; padding: 0.1rem 0.45rem; border-radius: 6px; background: var(--lk-surface-2); border: 1px solid var(--lk-border); color: var(--lk-gold); }
+
+/* 9. Artwork --------------------------------------------------------------- */
+.lk-artwork__title { margin: 1rem 0 0.4rem; }
+.lk-artwork--empty {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 1rem;
+  padding: 0.9rem 1.1rem;
+  border: 1px dashed var(--lk-gold-dim);
+  border-radius: var(--lk-radius);
+  background: rgba(194, 164, 93, 0.04);
+}
+.lk-artwork__icon { font-size: 1.5rem; opacity: 0.8; }
+.lk-artwork__copy { display: flex; flex-direction: column; font-size: 0.85rem; color: var(--lk-muted); }
+.lk-artwork__copy strong { color: var(--lk-text); font-size: 0.9rem; }
+[data-testid="stImage"] img { border-radius: var(--lk-radius); border: 1px solid var(--lk-border); }
+
+/* 10. Composer ------------------------------------------------------------- */
+[data-testid="stBottom"] > div, [data-testid="stBottomBlockContainer"] { background: transparent; }
+[data-testid="stBottom"] { background: linear-gradient(180deg, transparent, var(--lk-bg) 38%); }
+[data-testid="stChatInput"] {
+  background: var(--lk-surface-2);
+  border: 1px solid var(--lk-border);
+  border-radius: 18px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+[data-testid="stChatInput"]:focus-within { border-color: var(--lk-crimson-bright); }
+[data-testid="stChatInput"] textarea { font-size: 1rem; min-height: 3rem; }
+
+/* 11. Widgets -------------------------------------------------------------- */
+[data-testid="stExpander"] {
+  background: var(--lk-surface);
+  border: 1px solid var(--lk-border);
+  border-radius: 12px;
+  margin-top: 0.6rem;
+}
+[data-testid="stExpander"] summary { color: var(--lk-muted); font-size: 0.9rem; }
+[data-testid="stExpander"] summary:hover { color: var(--lk-text); }
+[data-testid="stAlert"] { border-radius: 12px; }
+
+/* 12. Responsive ----------------------------------------------------------- */
+@media (max-width: 900px) {
+  .block-container, [data-testid="stMainBlockContainer"] { padding: 1.5rem 1rem 8rem; }
+  .lk-welcome__title { font-size: 2.3rem; }
+  .lk-steps { flex-direction: column; align-items: flex-start; }
+  .lk-step:not(:last-child)::after { content: none; }
+}
