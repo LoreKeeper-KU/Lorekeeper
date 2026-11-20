@@ -1,0 +1,16 @@
+# LoreKeeper UI theme. Streamlit reads this when `streamlit run app.py` is started from the
+# repository root; lorekeeper_ui/styles.css adds the finer styling on top.
+
+[theme]
+base = "dark"
+primaryColor = "#9b1c31"
+backgroundColor = "#0e0e11"
+secondaryBackgroundColor = "#16161b"
+textColor = "#ece8e1"
+font = "sans serif"
+
+[client]
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false
