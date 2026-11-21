@@ -14,5 +14,8 @@ python-dotenv>=1.2.1
 # Graph analysis
 networkx
 
+# Web UI (app.py)
+streamlit>=1.44.0
+
 # Testing
 pytest>=8.4.2
