@@ -7,11 +7,23 @@ from shared.schemas import CanonFact
 
 DEFAULT_WORLD_ID = "world_001"
 
-ENTITY_ALIASES = {
-    "amina": "char_amina",
-    "khalid": "char_khalid",
-    "northern kingdom": "loc_northern_kingdom",
-}
+def entity_names(facts: list[CanonFact]) -> dict[str, set[str]]:
+    """Resolve approved display names and aliases, including legacy readable IDs."""
+    names: dict[str, set[str]] = {}
+
+    def register(name, entity_id):
+        if name.strip():
+            names.setdefault(name.strip().casefold(), set()).add(entity_id)
+
+    for fact in facts:
+        register(fact.subject, fact.subject)
+        for entity_id in (fact.subject, fact.object):
+            if entity_id.startswith(("char_", "loc_")):
+                register(entity_id, entity_id)
+                register(entity_id.split("_", 1)[1].replace("_", " "), entity_id)
+        if fact.predicate in {"name", "alias"}:
+            register(fact.object, fact.subject)
+    return names
 
 
 def add_fact(fact: CanonFact) -> None:
@@ -19,18 +31,21 @@ def add_fact(fact: CanonFact) -> None:
     CanonStore().add_fact(DEFAULT_WORLD_ID, fact)
 
 
-def retrieve_canon(query: str) -> list[CanonFact]:
-    """Retrieve canon facts involving known entities named in the query."""
-    entity_ids = [
+def retrieve_canon(query: str, *, world_id: str = DEFAULT_WORLD_ID) -> list[CanonFact]:
+    """Resolve names against current approved facts in the requested world."""
+    store = CanonStore()
+    names = entity_names(store.get_facts_by_world(world_id))
+    entity_ids = {
         entity_id
-        for name, entity_id in ENTITY_ALIASES.items()
-        if re.search(rf"\b{re.escape(name)}\b", query, flags=re.IGNORECASE)
-    ]
+        for name, matches in names.items()
+        if re.search(rf"(?<!\w){re.escape(name)}(?!\w)", query.casefold())
+        for entity_id in matches
+    }
 
     if not entity_ids:
         return []
 
-    return retrieve_by_entities(CanonStore(), DEFAULT_WORLD_ID, entity_ids)
+    return retrieve_by_entities(store, world_id, sorted(entity_ids))
 
 def propose_update(fact: CanonFact) -> str:
     return CanonStore().propose_update(DEFAULT_WORLD_ID, fact)

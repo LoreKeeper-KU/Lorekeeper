@@ -32,3 +32,18 @@ def test_approved_revision_replaces_current_fact_and_preserves_history(
 
     assert retrieve_canon(query) == [gold]
     assert CanonStore().get_fact_history(DEFAULT_WORLD_ID, "F005") == [(1, silver)]
+
+
+def test_dynamic_names_aliases_and_word_boundaries(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    facts = [
+        CanonFact(id="1", subject="char_uuid", predicate="name", object="Zara"),
+        CanonFact(id="2", subject="char_uuid", predicate="alias", object="Red Fox"),
+        CanonFact(id="3", subject="char_uuid", predicate="hair_color", object="red"),
+    ]
+    for fact in facts:
+        add_fact(fact)
+    assert retrieve_canon("ZARA meets Red Fox.") == facts
+    assert retrieve_canon("Zarathustra and Red Foxglove") == []
+    assert retrieve_canon("Red hair") == []
+    assert retrieve_canon("Zara", world_id="other_world") == []

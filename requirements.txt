@@ -14,6 +14,12 @@ python-dotenv>=1.2.1
 # Graph analysis
 networkx
 
+# Continuity verification and evaluation
+torch
+transformers
+sentencepiece
+scikit-learn
+
 # Web UI (app.py)
 streamlit>=1.44.0
 

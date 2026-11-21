@@ -45,7 +45,7 @@ def retrieve_for_request(
 
     from canon_memory.memory import retrieve_canon
 
-    facts = retrieve_canon(request.prompt)
+    facts = retrieve_canon(request.prompt, world_id=request.world_id)
 
     # A new character can be created before any canon exists.
     # RAG and Verified scenes still need approved facts.
@@ -68,6 +68,7 @@ def run_ui_request(
     comparator=None,
     include_visuals=False,
     max_visual_repairs=1,
+    generate=None,
 ) -> TeamResult | CharacterDraft:
     """Return a character draft or run the existing scene workflow."""
 
@@ -91,13 +92,14 @@ def run_ui_request(
     # Basic scenes ignore canon, even if the caller supplied some.
     facts = [] if request.mode == "basic" else canon_facts
     story = AIStoryGenerator(client)
+    generate = generate or story.generate_scene
 
     # Basic and RAG modes generate without verification.
     if request.mode in ("basic", "rag"):
         text = run_pipeline(
             request,
             retrieve=lambda _query: facts,
-            generate=story.generate_scene,
+            generate=generate,
             repair=story.repair_scene,
         )
 
@@ -139,15 +141,15 @@ def run_ui_request(
         return verifier.verify_scene(
             CheckerScene(
                 scene_id="scene",
-                world_id="world_001",
+                world_id=request.world_id,
                 text=text,
             ),
-            supplied_facts,
+            readable_canon(supplied_facts),
         )
 
     services = TeamServices(
         retrieve=lambda _query: facts,
-        generate=story.generate_scene,
+        generate=generate,
         verify=verify,
         repair=story.repair_scene,
     )
@@ -181,3 +183,22 @@ def run_ui_request(
         include_visuals=include_visuals,
         max_visual_repairs=max_visual_repairs,
     )
+
+
+def readable_canon(facts):
+    """Expose display names to the checker while preserving evidence IDs.
+
+    Character drafts use UUID subjects. The relevance filter and NLI model
+    need the same names that appear in prose, not those opaque identifiers.
+    """
+    names = {fact.subject: fact.object for fact in facts if fact.predicate == "name"}
+    return [fact.model_copy(update={
+        "subject": names.get(fact.subject, fact.subject),
+        "object": names.get(fact.object, fact.object),
+    }) for fact in facts]
+
+
+def handle_message(request, **services):
+    """The UI's single entry point; routing and context stay in the backend."""
+    from .chat_orchestrator import handle_message as handle
+    return handle(request, **services)

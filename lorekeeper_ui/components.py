@@ -179,3 +179,29 @@ def render_reply(index: int, message: dict) -> None:
         st.error(f"LoreKeeper couldn't finish this request. {message['error']}")
     else:
         render_result(index, message["result"])
+
+
+def render_chat_message(index, message) -> None:
+    """Render the backend reply as chat, with optional factual check details."""
+    avatar = USER_AVATAR if message.role == "user" else ASSISTANT_AVATAR
+    with st.chat_message(message.role, avatar=avatar):
+        if message.kind == "error":
+            st.error(message.content)
+        else:
+            st.markdown(message.content)
+        result = message.pipeline
+        if result is not None:
+            if result.status == "needs_review":
+                st.caption("Some details still need review; see the canon checks below.")
+            with st.expander("Canon checks"):
+                st.caption(canon_check(result).headline)
+                for number, report in enumerate(result.reports, start=1):
+                    pass_header(number, report)
+                    for position, assessment in enumerate(report.claims):
+                        claim_card(
+                            f"chat-{index}-{number}-{position}", assessment,
+                            claim_repair_state(result, number - 1, assessment),
+                        )
+                if was_repaired(result):
+                    st.markdown("**Before correction**")
+                    st.markdown(result.initial_scene.text)
