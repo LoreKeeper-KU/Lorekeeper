@@ -1,4 +1,5 @@
 # Authored by Faris
+# Integration changes by Abdullah on 21/11/2026
 """The pieces of a LoreKeeper chat reply.
 
 Generated text (scene, claims, reasons) is always shown through plain st.markdown. The small
@@ -135,7 +136,12 @@ def artwork(result) -> None:
     )
 
 
-def render_result(index: int, result) -> None:
+#def render_result(index: int, result) -> None:
+def render_result(
+    index: int,
+    result,
+    show_artwork: bool = True,
+) -> None:
     check = canon_check(result)
     repaired = was_repaired(result)
     chip = ""
@@ -154,7 +160,9 @@ def render_result(index: int, result) -> None:
     if repaired:
         with st.expander("View original generation"):
             scene_card(f"original-{index}", result.initial_scene.text, title="Original generation")
-    artwork(result)
+    #artwork(result)
+    if show_artwork:
+        artwork(result)
 
 
 def render_message(index: int, message: dict) -> None:

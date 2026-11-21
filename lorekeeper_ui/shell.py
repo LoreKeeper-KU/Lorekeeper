@@ -17,19 +17,51 @@ MODE_LABELS = {
 }
 DEFAULT_MAX_REPAIRS = 3
 
+# SUGGESTIONS = (
+#     ("Create a fantasy kingdom", ":material/castle:",
+#      "Shape its history, rulers and lands",
+#      "Create a fantasy kingdom with its history, rulers and geography."),
+#     ("Define a character", ":material/person:",
+#      "Give them a past, a goal and a flaw",
+#      "Define a character for my world, with their background, goals and flaws."),
+#     ("Write the next scene", ":material/auto_stories:",
+#      "Continue the story, in line with canon",
+#      "Write the next scene of my story."),
+#     ("Check my world's canon", ":material/verified_user:",
+#      "Look for contradictions in what is established",
+#      "Check my world's canon for contradictions."),
+# )
+
 SUGGESTIONS = (
-    ("Create a fantasy kingdom", ":material/castle:",
-     "Shape its history, rulers and lands",
-     "Create a fantasy kingdom with its history, rulers and geography."),
-    ("Define a character", ":material/person:",
-     "Give them a past, a goal and a flaw",
-     "Define a character for my world, with their background, goals and flaws."),
-    ("Write the next scene", ":material/auto_stories:",
-     "Continue the story, in line with canon",
-     "Write the next scene of my story."),
-    ("Check my world's canon", ":material/verified_user:",
-     "Look for contradictions in what is established",
-     "Check my world's canon for contradictions."),
+    (
+        "Describe Amina",
+        ":material/person:",
+        "Use her established appearance",
+        "Describe only Amina's black hair and brown eyes in two "
+        "short factual sentences. Do not add actions, scenery, "
+        "magic, or other details.",
+    ),
+    (
+        "A market scene",
+        ":material/storefront:",
+        "Place Amina in the Northern Kingdom",
+        "Write a short scene about Amina visiting a market "
+        "in the Northern Kingdom.",
+    ),
+    (
+        "A castle scene",
+        ":material/castle:",
+        "Write a scene using existing canon",
+        "Write a short scene about Amina at a castle "
+        "in the Northern Kingdom.",
+    ),
+    (
+        "Describe the ruler",
+        ":material/auto_stories:",
+        "Describe Amina using approved facts",
+        "Write two factual sentences describing Amina "
+        "using only the approved canon.",
+    ),
 )
 
 
