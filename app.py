@@ -75,6 +75,7 @@ if prompt and prompt.strip():
         history=list(messages),
         active_scene_id=st.session_state.get("active_scene_id"),
         pending_canon=st.session_state.get("pending_canon"),
+        conversation=st.session_state.get("conversation"),
     )
     user_message = ChatMessage(role="user", content=request.message, world_id=world_id)
     messages.append(user_message)
@@ -85,6 +86,7 @@ if prompt and prompt.strip():
             reply = handle_message(request, comparator_factory=load_comparator)
         st.session_state["active_scene_id"] = reply.active_scene_id
         st.session_state["pending_canon"] = reply.pending_canon
+        st.session_state["conversation"] = reply.conversation
         assistant_message = reply.message
     except Exception as error:
         # Provider responses can contain secrets. Preserve context for retries

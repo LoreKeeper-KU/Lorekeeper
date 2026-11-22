@@ -21,7 +21,7 @@ def entity_names(facts: list[CanonFact]) -> dict[str, set[str]]:
             if entity_id.startswith(("char_", "loc_")):
                 register(entity_id, entity_id)
                 register(entity_id.split("_", 1)[1].replace("_", " "), entity_id)
-        if fact.predicate in {"name", "alias"}:
+        if fact.predicate in {"name", "alias", "former_name"}:
             register(fact.object, fact.subject)
     return names
 

@@ -10,6 +10,7 @@ def _new_session() -> None:
     st.session_state["messages"] = []
     st.session_state["active_scene_id"] = None
     st.session_state["pending_canon"] = None
+    st.session_state["conversation"] = None
     st.session_state.pop("pending_prompt", None)
 
 

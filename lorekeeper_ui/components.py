@@ -7,6 +7,7 @@ HTML fragments here are built from constants, numbers and html-escaped text only
 """
 
 from html import escape
+from pathlib import Path
 
 import streamlit as st
 
@@ -189,6 +190,17 @@ def render_chat_message(index, message) -> None:
             st.error(message.content)
         else:
             st.markdown(message.content)
+        asset = getattr(message, "asset", None)
+        if asset is not None:
+            image_path = Path(asset.image_path)
+            if image_path.is_file():
+                st.image(str(image_path))
+            else:
+                st.warning("The saved image file is no longer available.")
+            with st.expander("Image checks"):
+                st.caption(message.visual_status.replace("_", " "))
+                for note in message.visual_notes:
+                    st.write(note)
         result = message.pipeline
         if result is not None:
             if result.status == "needs_review":

@@ -6,7 +6,7 @@ from unittest.mock import Mock
 import pytest
 from streamlit.testing.v1 import AppTest
 
-from generation_engine.models import ChatMessage, ChatReply, PendingCanon
+from generation_engine.models import ChatMessage, ChatReply, PendingCanon, ConversationState
 from ui_builders import result, CONTRADICTION, SUPPORTED
 
 APP = Path(__file__).resolve().parents[2] / "app.py"
@@ -78,12 +78,26 @@ def test_new_chat_clears_context_but_keeps_world(launch):
     app.session_state["world_id"] = "my_world"
     send(app, "Write about Mira")
     app.session_state["pending_canon"] = PendingCanon("my_world", "Mira", [], [])
+    app.session_state["conversation"] = ConversationState("my_world", ["mira"])
     app.button(key="new_session").click().run()
     assert app.session_state["messages"] == []
     assert app.session_state["active_scene_id"] is None
     assert app.session_state["pending_canon"] is None
+    assert app.session_state["conversation"] is None
     assert app.session_state["world_id"] == "my_world"
     assert not app.chat_message
+
+
+def test_ui_forwards_backend_conversation_state(launch):
+    app, backend = launch()
+    state = ConversationState("world_001", ["mira"], "propose_fact", "Change her hair color", "Which color?")
+    backend.side_effect = lambda request, **kwargs: ChatReply(
+        ChatMessage("assistant", "Which color?", request.world_id), conversation=state
+    )
+    send(app, "Change Mira's hair color")
+    assert app.session_state["conversation"] == state
+    send(app, "silver")
+    assert backend.call_args.args[0].conversation == state
 
 
 def test_corrections_are_collapsed_under_reply(launch):
