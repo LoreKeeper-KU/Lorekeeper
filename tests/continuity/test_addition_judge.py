@@ -8,6 +8,7 @@ import pytest
 
 from continuity_checker.addition_judge import (
     ADDITION_SYSTEM_PROMPT,
+    SCENERY_SYSTEM_PROMPT,
     AdditionDecision,
     AdditionVerdict,
     LLMAdditionJudge,
@@ -141,7 +142,13 @@ def test_policy_does_not_ask_the_judge_about_supported_claims():
         conflicting_fact_ids=[],
     )
 
-    result = ContradictionClassifier(LLMAdditionJudge(client)).classify(CLAIM, supported, FACTS)
+    restated = Claim(
+        claim_id="C001",
+        text="Queen Lyra rules Eldoria.",  # restates fact-002, so that fact may support it
+        source_span=SourceSpan(start=0, end=25),
+    )
+
+    result = ContradictionClassifier(LLMAdditionJudge(client)).classify(restated, supported, FACTS)
 
     assert result.classification == ClaimClassification.SUPPORTED
     assert client.calls == []
@@ -289,3 +296,75 @@ def test_the_judge_always_asks_the_model_even_on_one_fact_and_obeys_its_verdict(
     ((_, prompt, _),) = client.calls
     assert claim_text in prompt
     assert all(f"{fact.id}:" in prompt for fact in facts)
+
+
+# ---- judging scenery that no canon fact is about ----
+
+BIRD_CLAIM = Claim(
+    claim_id="C002",
+    text="A bird startled from a nearby pine.",
+    source_span=SourceSpan(start=0, end=35),
+)
+
+
+def test_the_evaluated_judge_prompt_is_unchanged():
+    """The benchmark results record this prompt's hash; the scenery path must not alter it."""
+    import hashlib
+    import json
+    from pathlib import Path
+
+    recorded = json.loads(
+        (Path(__file__).resolve().parents[2]
+         / "evaluation/results_heldout/20261113-110427/run_info.json").read_text(encoding="utf8")
+    )["judge_prompt_sha256"]
+
+    assert hashlib.sha256(ADDITION_SYSTEM_PROMPT.encode("utf-8")).hexdigest() == recorded
+
+
+def test_an_approved_scenery_detail_is_a_valid_new_addition():
+    assert judge_with(AdditionVerdict.VALID_NEW_ADDITION).judge_unrelated(BIRD_CLAIM, FACTS) is True
+
+
+@pytest.mark.parametrize(
+    "verdict", [AdditionVerdict.CONFLICTS_OR_TENSION, AdditionVerdict.INSUFFICIENT_CONTEXT]
+)
+def test_scenery_is_not_approved_on_any_other_verdict(verdict):
+    assert judge_with(verdict).judge_unrelated(BIRD_CLAIM, FACTS) is False
+
+
+def test_scenery_without_any_canon_is_declined_and_never_asked():
+    client = FakeSharedClient(verdict=AdditionVerdict.VALID_NEW_ADDITION)
+
+    assert LLMAdditionJudge(client).judge_unrelated(BIRD_CLAIM, []) is False
+    assert client.calls == []
+
+
+def test_the_scenery_judgement_uses_its_own_prompt_and_shows_the_claim_and_all_canon():
+    client = FakeSharedClient(verdict=AdditionVerdict.VALID_NEW_ADDITION)
+
+    LLMAdditionJudge(client).judge_unrelated(BIRD_CLAIM, FACTS)
+
+    ((instructions, prompt, schema),) = client.calls
+    assert instructions == SCENERY_SYSTEM_PROMPT
+    assert instructions != ADDITION_SYSTEM_PROMPT
+    assert schema is AdditionDecision
+    assert "A bird startled from a nearby pine." in prompt
+    assert "fact-001: Captain Arin weapon: golden spear" in prompt
+    assert "fact-002: Queen Lyra rules: Eldoria" in prompt
+    assert "none of it is about this claim" in prompt
+
+
+def test_the_scenery_prompt_names_every_verdict_and_the_unnamed_entity_rule():
+    for verdict in AdditionVerdict:
+        assert verdict.value in SCENERY_SYSTEM_PROMPT
+    text = SCENERY_SYSTEM_PROMPT.lower()
+    assert "names a specific person, place or organisation" in text
+    assert "even by implication" in text  # a conflict need not be explicit
+    assert "never invent canon" in text
+
+
+def test_a_failing_scenery_call_is_raised_not_turned_into_a_decision():
+    judge = LLMAdditionJudge(FakeSharedClient(error=AIClientError("down")))
+
+    with pytest.raises(AIClientError):
+        judge.judge_unrelated(BIRD_CLAIM, FACTS)
