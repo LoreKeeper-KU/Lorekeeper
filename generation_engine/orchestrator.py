@@ -14,50 +14,58 @@ from shared.schemas import VerificationReport
 
 from .models import DemoRequest, PipelineResult, Scene
 from .story_generator import generate_scene, repair_scene
-from .team_stubs import retrieve_canon, verify_scene
+
+from .team_stubs import retrieve_canon
+from continuity_checker.checker import verify_scene
 
 
-def run_pipeline(request: DemoRequest) -> PipelineResult:
+def run_pipeline(
+    request: DemoRequest,
+    *,
+    retrieve=None,
+    generate=None,
+    verify=None,
+    repair=None,
+) -> PipelineResult:
     """Run the selected generation mode and return its results."""
 
-    # Reject unsupported modes and invalid repair limits.
+    # The team demo supplies real functions here.
+    # Existing demo callers can continue using their original functions.
+    retrieve = retrieve if retrieve is not None else retrieve_canon
+    generate = generate if generate is not None else generate_scene
+    verify = verify if verify is not None else verify_scene
+    repair = repair if repair is not None else repair_scene
+
     if request.mode not in ("basic", "rag", "verified"):
         raise ValueError("Mode must be 'basic', 'rag', or 'verified'.")
 
     if (
-        not isinstance(request.max_repair_attempts, int)
+        type(request.max_repair_attempts) is not int
         or request.max_repair_attempts < 0
     ):
         raise ValueError("The repair limit must be a non-negative integer.")
 
-    # Basic mode generates without canon.
-    # RAG and verified modes retrieve a list of shared CanonFact objects.
+    # Basic mode generates without retrieving canon.
     canon_facts = (
         []
         if request.mode == "basic"
-        else retrieve_canon(request.prompt)
+        else retrieve(request.prompt)
     )
 
-    # Your generation function returns text.
-    initial_text = generate_scene(request.prompt, canon_facts)
+    initial_text = generate(request.prompt, canon_facts)
 
-    # Wrap the text in a local Scene object to track revisions.
     initial_scene = Scene(
         scene_id="scene_001",
         text=initial_text,
         revision=0,
     )
 
-    # Preserve the original scene while tracking the latest version.
+    # Preserve the initial scene while tracking later revisions.
     current_scene = initial_scene
-
-    # Store the shared report returned by every verification call.
     reports: list[VerificationReport] = []
-
-    # Count actual repair calls.
     repair_attempts = 0
 
-    # Basic and RAG modes do not verify or repair their outputs.
+    # Basic and RAG modes do not verify or repair.
     if request.mode in ("basic", "rag"):
         return PipelineResult(
             status="unverified",
@@ -67,20 +75,17 @@ def run_pipeline(request: DemoRequest) -> PipelineResult:
             repair_attempts=repair_attempts,
         )
 
-    # Verified mode checks the initial scene and every repaired version.
     while True:
-        # Pass the scene text and the same retrieved canon to the verifier.
-        # It already returns the shared VerificationReport object.
-        report = verify_scene(
+        # Check the current scene against the same retrieved facts.
+        report = verify(
             current_scene.text,
             canon_facts,
         )
 
         reports.append(report)
 
-        # An empty or uncertain report needs user review.
-        # Zero detected contradictions alone does not establish success.
-        if not report.claims or report.summary.uncertain > 0:
+        # An empty report cannot establish consistency.
+        if not report.claims:
             return PipelineResult(
                 status="needs_review",
                 initial_scene=initial_scene,
@@ -89,19 +94,23 @@ def run_pipeline(request: DemoRequest) -> PipelineResult:
                 repair_attempts=repair_attempts,
             )
 
-        # No contradictions or uncertainty remain in this report.
-        # This does not automatically approve new facts for canon.
+        # If no contradictions remain, uncertainty determines whether
+        # the result still needs human review.
         if report.summary.contradictions == 0:
             return PipelineResult(
-                status="verified",
+                status=(
+                    "needs_review"
+                    if report.summary.uncertain > 0
+                    else "verified"
+                ),
                 initial_scene=initial_scene,
                 final_scene=current_scene,
                 reports=reports,
                 repair_attempts=repair_attempts,
             )
 
-        # Check the limit AFTER verification so the final repair
-        # always gets rechecked before the workflow stops.
+        # Check the limit after verification, so the last allowed
+        # repair always gets checked.
         if repair_attempts >= request.max_repair_attempts:
             return PipelineResult(
                 status="needs_review",
@@ -111,21 +120,30 @@ def run_pipeline(request: DemoRequest) -> PipelineResult:
                 repair_attempts=repair_attempts,
             )
 
-        # Repair the conflicting content using the report and canon.
-        repaired_text = repair_scene(
+        # Repair confirmed contradictions, even if other claims
+        # in the report remain uncertain.
+        repaired_text = repair(
             current_scene.text,
             report,
             canon_facts,
         )
 
-        # Count this repair exactly once.
         repair_attempts += 1
 
-        # Create a new revision without overwriting the original scene.
+        # Stop if the repair function made no change.
+        if repaired_text == current_scene.text:
+            return PipelineResult(
+                status="needs_review",
+                initial_scene=initial_scene,
+                final_scene=current_scene,
+                reports=reports,
+                repair_attempts=repair_attempts,
+            )
+
         current_scene = Scene(
             scene_id=current_scene.scene_id,
             text=repaired_text,
             revision=current_scene.revision + 1,
         )
 
-        # The loop now returns to verify_scene() to check this revision.
+        # The loop checks this new revision next.

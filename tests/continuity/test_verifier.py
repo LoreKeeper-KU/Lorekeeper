@@ -201,15 +201,31 @@ def test_the_judge_and_classifier_see_only_the_relevant_facts():
     assert seen == [["F001", "F002"]]
 
 
-def test_a_claim_with_no_relevant_facts_is_uncertain_and_nothing_is_compared_or_judged():
+def test_a_named_claim_with_no_relevant_facts_is_uncertain_and_nothing_is_compared_or_judged():
     judged = []
     verifier, compared = recording_verifier(judge=lambda c, e: judged.append(1) or True)
 
-    result = verifier.verify_claim(make_claim("The merchant sold bread."), [F001, BORIN, F002])
+    result = verifier.verify_claim(make_claim("Madame Orlova sold bread."), [F001, BORIN, F002])
 
     assert result.classification == ClaimClassification.UNCERTAIN
     assert compared == []
     assert judged == []
+
+
+def test_scenery_with_no_relevant_facts_is_judged_against_all_the_supplied_canon():
+    seen = []
+
+    def judge(claim, evidence):
+        seen.append([fact.id for fact in evidence])
+        return True
+
+    verifier, compared = recording_verifier(judge=judge)
+
+    result = verifier.verify_claim(make_claim("The merchant sold bread."), [F001, BORIN, F002])
+
+    assert result.classification == ClaimClassification.VALID_NEW_ADDITION
+    assert compared == []  # nothing is related, so the NLI model is not asked
+    assert seen == [["F001", "F009", "F002"]]
 
 
 def test_the_relevance_function_can_be_replaced():

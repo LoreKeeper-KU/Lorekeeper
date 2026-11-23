@@ -1,54 +1,100 @@
-# Authored by Faris
-"""LoreKeeper UI. Run it with:  streamlit run app.py
+"""LoreKeeper chat UI. Run with: streamlit run app.py.
 
-A chat-style interface over generation_engine.orchestrator.run_pipeline(). The page holds no
-generation, retrieval or verification logic: it sends the user's message to the pipeline and
-displays the PipelineResult it returns (see lorekeeper_ui/ for the presentation code).
+The UI passes messages and conversation context to the backend. Workflow
+selection, canon retrieval, creation, and verification belong to the backend.
 """
 
-import streamlit as st
+import os
+from pathlib import Path
+from threading import RLock
 
-from generation_engine.models import DemoRequest
-from generation_engine.orchestrator import run_pipeline
+import streamlit as st
+from dotenv import load_dotenv
+
+ROOT = Path(__file__).resolve().parent
+os.chdir(ROOT)
+load_dotenv(ROOT / ".env")
+
+from generation_engine.models import ChatMessage, ChatRequest
+from generation_engine.ui_backend import handle_message
 from lorekeeper_ui import components, shell
 from lorekeeper_ui.theme import inject_css
 
-st.set_page_config(
-    page_title="LoreKeeper",
-    page_icon="🛡️",
-    layout="wide",
-    initial_sidebar_state="auto",  # open on laptop/projector widths, collapsed on narrow screens
-)
+st.set_page_config(page_title="LoreKeeper", page_icon="🛡️", layout="wide")
 inject_css()
 
+
+@st.cache_resource(show_spinner=False)
+def load_comparator():
+    """Load the NLI model once per server process."""
+
+    from continuity_checker.nli_comparator import (
+        NLIComparator,
+    )
+
+    model = NLIComparator.from_pretrained(
+        "MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli"
+    )
+
+    lock = RLock()
+
+    # The cached model is shared between browser sessions.
+    # Protect model access when requests arrive simultaneously.
+    def compare(claim, fact):
+        with lock:
+            return model(claim, fact)
+
+    return compare
+
+# Discard only incompatible session objects left by the old scene-only UI.
+if st.session_state.get("chat_schema") != 1:
+    st.session_state["messages"] = []
+    st.session_state["active_scene_id"] = None
+    st.session_state["pending_canon"] = None
+    st.session_state["chat_schema"] = 1
+
+world_id = st.session_state.setdefault("world_id", "world_001")
+if st.session_state.get("conversation_world", world_id) != world_id:
+    shell._new_session()
+st.session_state["conversation_world"] = world_id
 messages = st.session_state.setdefault("messages", [])
-
-# A message comes from the composer or from a clicked suggestion card.
-typed = st.chat_input("Describe a world, a character or the next scene…")
-prompt = st.session_state.pop("pending_prompt", None) or typed
-if prompt is not None and not prompt.strip():
-    st.toast("Type a message to begin.", icon="✍️")
-    prompt = None
-if prompt:
-    prompt = prompt.strip()
-    messages.append({"role": "user", "content": prompt})
-
-settings = shell.render_sidebar(messages)
+shell.render_sidebar(messages, world_id)
+# A New chat callback can replace the list before this run.
+messages = st.session_state["messages"]
 
 if not messages:
     shell.render_welcome()
-for index, message in enumerate(messages):
-    components.render_message(index, message)
 
-if prompt:
-    request = DemoRequest(
-        prompt=prompt, mode=settings.mode, max_repair_attempts=settings.max_repairs
+for index, message in enumerate(messages):
+    components.render_chat_message(index, message)
+
+prompt = st.chat_input("Message LoreKeeper…")
+if prompt and prompt.strip():
+    request = ChatRequest(
+        message=prompt.strip(), world_id=world_id,
+        history=list(messages),
+        active_scene_id=st.session_state.get("active_scene_id"),
+        pending_canon=st.session_state.get("pending_canon"),
+        conversation=st.session_state.get("conversation"),
     )
-    with st.chat_message("assistant", avatar=components.ASSISTANT_AVATAR):
-        with st.spinner("LoreKeeper is writing and checking your scene…"):
-            try:
-                reply = {"role": "assistant", "result": run_pipeline(request)}
-            except Exception as error:  # show any pipeline failure instead of a stack trace
-                reply = {"role": "assistant", "error": f"{type(error).__name__}: {error}"}
-        messages.append(reply)
-        components.render_reply(len(messages) - 1, reply)
+    user_message = ChatMessage(role="user", content=request.message, world_id=world_id)
+    messages.append(user_message)
+    components.render_chat_message(len(messages) - 1, user_message)
+
+    try:
+        with st.spinner("Thinking…"):
+            reply = handle_message(request, comparator_factory=load_comparator)
+        st.session_state["active_scene_id"] = reply.active_scene_id
+        st.session_state["pending_canon"] = reply.pending_canon
+        st.session_state["conversation"] = reply.conversation
+        assistant_message = reply.message
+    except Exception as error:
+        # Provider responses can contain secrets. Preserve context for retries
+        # without exposing raw errors or pretending generation succeeded.
+        assistant_message = ChatMessage(
+            role="assistant", world_id=world_id, kind="error",
+            content=f"I couldn't complete that request ({type(error).__name__}). "
+                    "Check the API or local model configuration, then try again.",
+        )
+    messages.append(assistant_message)
+    components.render_chat_message(len(messages) - 1, assistant_message)

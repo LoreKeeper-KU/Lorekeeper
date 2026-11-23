@@ -172,40 +172,47 @@ class CanonStore:
         return proposal_id
 
     def approve_update(self, proposal_id: str) -> None:
-        """Apply a pending proposal to accepted canon."""
+        """Apply one pending proposal to accepted canon."""
+        self.approve_updates([proposal_id])
+
+    def approve_updates(self, proposal_ids: list[str], *, world_id_filter=None) -> None:
+        """Approve all facts together, rolling back if any proposal fails."""
         with closing(self._connect()) as conn:
             with conn:
                 conn.execute("BEGIN IMMEDIATE")
-                row = conn.execute(
-                    """
-                    SELECT world_id, payload_json, status, base_revision
-                    FROM canon_proposals
-                    WHERE proposal_id = ?
-                    """,
-                    (proposal_id,),
-                ).fetchone()
+                for proposal_id in proposal_ids:
+                    row = conn.execute(
+                        """
+                        SELECT world_id, payload_json, status, base_revision
+                        FROM canon_proposals
+                        WHERE proposal_id = ?
+                        """,
+                        (proposal_id,),
+                    ).fetchone()
 
-                if row is None:
-                    raise KeyError(f"Unknown proposal: {proposal_id}")
+                    if row is None:
+                        raise KeyError(f"Unknown proposal: {proposal_id}")
 
-                world_id, payload_json, status, base_revision = row
-                if status == "approved":
-                    return
+                    world_id, payload_json, status, base_revision = row
+                    if world_id_filter is not None and world_id != world_id_filter:
+                        raise ValueError("Proposal belongs to another world.")
+                    if status == "approved":
+                        continue
 
-                fact = CanonFact.model_validate_json(payload_json)
-                if base_revision is None:
-                    self._insert_fact(conn, world_id, fact)
-                else:
-                    self._apply_revision(conn, world_id, fact, base_revision)
+                    fact = CanonFact.model_validate_json(payload_json)
+                    if base_revision is None:
+                        self._insert_fact(conn, world_id, fact)
+                    else:
+                        self._apply_revision(conn, world_id, fact, base_revision)
 
-                conn.execute(
-                    """
-                    UPDATE canon_proposals
-                    SET status = 'approved'
-                    WHERE proposal_id = ?
-                    """,
-                    (proposal_id,),
-                )
+                    conn.execute(
+                        """
+                        UPDATE canon_proposals
+                        SET status = 'approved'
+                        WHERE proposal_id = ?
+                        """,
+                        (proposal_id,),
+                    )
 
     def _apply_revision(
         self,

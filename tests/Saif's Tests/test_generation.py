@@ -2,6 +2,8 @@
 from shared.schemas import VerificationReport
 from generation_engine.models import DemoRequest
 from generation_engine.orchestrator import run_pipeline
+from unittest.mock import patch
+from generation_engine.team_stubs import verify_scene as verify_demo_scene
 
 
 # Create a sample request.
@@ -12,7 +14,12 @@ request = DemoRequest(
 )
 
 # Run the workflow.
-result = run_pipeline(request)
+# This test checks the scripted workflow using the temporary verifier.
+with patch(
+    "generation_engine.orchestrator.verify_scene",
+    verify_demo_scene,
+):
+    result = run_pipeline(request)
 
 # Display the result.
 print("Status:", result.status)

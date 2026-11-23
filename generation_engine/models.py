@@ -3,8 +3,10 @@
 # They are simple data containers for now.
 
 from dataclasses import dataclass, field
+from typing import Literal
+from uuid import uuid4
 
-from shared.schemas import CanonFact, VerificationReport
+from shared.schemas import CanonFact, VerificationReport, VisualAsset
 
 @dataclass
 class DemoRequest:
@@ -20,6 +22,7 @@ class DemoRequest:
 
     # The maximum number of times the system may repair a scene.
     max_repair_attempts: int = 3
+    world_id: str = "world_001"
 
 
 @dataclass
@@ -53,3 +56,53 @@ class PipelineResult:
 
     # Number of repairs performed.
     repair_attempts: int = 0
+
+
+@dataclass
+class ChatMessage:
+    role: Literal["user", "assistant"]
+    content: str
+    world_id: str
+    kind: str = "message"
+    id: str = field(default_factory=lambda: uuid4().hex)
+    source_scene_id: str | None = None
+    pipeline: PipelineResult | None = None
+    asset: VisualAsset | None = None
+    visual_status: str = "not_requested"
+    visual_notes: list[str] = field(default_factory=list)
+
+
+@dataclass
+class PendingCanon:
+    world_id: str
+    name: str
+    facts: list[CanonFact]
+    proposal_ids: list[str]
+    message_id: str | None = None
+
+
+@dataclass
+class ConversationState:
+    world_id: str
+    focus_entity_ids: list[str] = field(default_factory=list)
+    unfinished_task: str = ""
+    task_request: str = ""
+    last_question: str = ""
+
+
+@dataclass
+class ChatRequest:
+    message: str
+    world_id: str = "world_001"
+    history: list[ChatMessage] = field(default_factory=list)
+    active_scene_id: str | None = None
+    pending_canon: PendingCanon | None = None
+    conversation: ConversationState | None = None
+
+
+@dataclass
+class ChatReply:
+    message: ChatMessage
+    active_scene_id: str | None = None
+    pending_canon: PendingCanon | None = None
+    conversation: ConversationState | None = None

@@ -1,4 +1,5 @@
 # Authored by Faris
+# Integration changes by Abdullah on 21/11/2026
 """The pieces of a LoreKeeper chat reply.
 
 Generated text (scene, claims, reasons) is always shown through plain st.markdown. The small
@@ -6,6 +7,7 @@ HTML fragments here are built from constants, numbers and html-escaped text only
 """
 
 from html import escape
+from pathlib import Path
 
 import streamlit as st
 
@@ -135,7 +137,12 @@ def artwork(result) -> None:
     )
 
 
-def render_result(index: int, result) -> None:
+#def render_result(index: int, result) -> None:
+def render_result(
+    index: int,
+    result,
+    show_artwork: bool = True,
+) -> None:
     check = canon_check(result)
     repaired = was_repaired(result)
     chip = ""
@@ -154,7 +161,9 @@ def render_result(index: int, result) -> None:
     if repaired:
         with st.expander("View original generation"):
             scene_card(f"original-{index}", result.initial_scene.text, title="Original generation")
-    artwork(result)
+    #artwork(result)
+    if show_artwork:
+        artwork(result)
 
 
 def render_message(index: int, message: dict) -> None:
@@ -171,3 +180,40 @@ def render_reply(index: int, message: dict) -> None:
         st.error(f"LoreKeeper couldn't finish this request. {message['error']}")
     else:
         render_result(index, message["result"])
+
+
+def render_chat_message(index, message) -> None:
+    """Render the backend reply as chat, with optional factual check details."""
+    avatar = USER_AVATAR if message.role == "user" else ASSISTANT_AVATAR
+    with st.chat_message(message.role, avatar=avatar):
+        if message.kind == "error":
+            st.error(message.content)
+        else:
+            st.markdown(message.content)
+        asset = getattr(message, "asset", None)
+        if asset is not None:
+            image_path = Path(asset.image_path)
+            if image_path.is_file():
+                st.image(str(image_path))
+            else:
+                st.warning("The saved image file is no longer available.")
+            with st.expander("Image checks"):
+                st.caption(message.visual_status.replace("_", " "))
+                for note in message.visual_notes:
+                    st.write(note)
+        result = message.pipeline
+        if result is not None:
+            if result.status == "needs_review":
+                st.caption("Some details still need review; see the canon checks below.")
+            with st.expander("Canon checks"):
+                st.caption(canon_check(result).headline)
+                for number, report in enumerate(result.reports, start=1):
+                    pass_header(number, report)
+                    for position, assessment in enumerate(report.claims):
+                        claim_card(
+                            f"chat-{index}-{number}-{position}", assessment,
+                            claim_repair_state(result, number - 1, assessment),
+                        )
+                if was_repaired(result):
+                    st.markdown("**Before correction**")
+                    st.markdown(result.initial_scene.text)

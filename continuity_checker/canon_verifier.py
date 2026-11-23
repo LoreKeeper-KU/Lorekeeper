@@ -83,7 +83,8 @@ class CanonVerifier:
     def verify_claim(self, claim: Claim, canon_evidence: list[CanonFact]) -> VerifiedClaim:
         relevant = self.relevance(claim, canon_evidence)
         comparison = compare_claim(claim, relevant, self.comparator)
-        return self.classifier.classify(claim, comparison, relevant)
+        # world_facts lets the classifier judge anonymous scenery that no relevant fact covers.
+        return self.classifier.classify(claim, comparison, relevant, world_facts=canon_evidence)
 
     def verify_claims(self, scene: Scene, canon_evidence: list[CanonFact]) -> list[VerifiedClaim]:
         """Detailed results, including claim IDs and source spans (internal use)."""

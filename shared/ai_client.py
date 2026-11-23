@@ -33,6 +33,11 @@ RETRY_STATUS_CODES = {429, 500, 502, 503, 504}  # temporary problems worth retry
 class AIClientError(Exception):
     """Raised when an AI call fails. The message says what went wrong."""
 
+    def __init__(self, message, *, public_message="The AI service request failed.", status_code=None):
+        super().__init__(message)
+        self.public_message = public_message
+        self.status_code = status_code
+
 
 class AIClient:
     def __init__(
@@ -67,19 +72,24 @@ class AIClient:
                 if attempt < self.max_retries:
                     time.sleep(2**attempt)
                     continue
-                raise AIClientError(f"Could not reach {url}: {exc}") from exc
+                detail = ("The AI request timed out. Try again or increase REQUEST_TIMEOUT."
+                          if isinstance(exc, requests.Timeout)
+                          else "Could not connect to the AI provider. Check the network and API_BASE_URL.")
+                raise AIClientError(f"Could not reach {url}: {exc}", public_message=detail) from exc
 
-            if response.status_code in RETRY_STATUS_CODES and attempt < self.max_retries:
+            if _should_retry(response) and attempt < self.max_retries:
                 time.sleep(2**attempt)  # wait 1s, 2s, 4s... then try again
                 continue
             if response.status_code >= 400:
                 raise AIClientError(
-                    f"{method} {url} failed ({response.status_code}): {_error_text(response)}"
+                    f"{method} {url} failed ({response.status_code}): {_error_text(response)}",
+                    public_message=_public_api_error(response), status_code=response.status_code,
                 )
             try:
                 return response.json()
             except ValueError as exc:
-                raise AIClientError(f"{url} did not return JSON: {response.text[:200]}") from exc
+                raise AIClientError(f"{url} did not return JSON: {response.text[:200]}",
+                                    public_message="The AI provider returned an invalid response instead of JSON.") from exc
 
         raise AIClientError(f"{url} failed after {self.max_retries + 1} attempts")  # pragma: no cover
 
@@ -143,6 +153,36 @@ class AIClient:
             {"role": "user", "content": prompt},
         ]
         return self._chat(messages, config.TEXT_MODEL)
+
+    def chat_with_tools(self, messages: list[dict], tools: list[dict]) -> dict:
+        """Return an assistant message: ordinary text or native function calls."""
+        result = self._request("POST", "chat/completions", json={
+            "model": config.TEXT_MODEL, "messages": messages,
+            "tools": tools, "tool_choice": "auto", "parallel_tool_calls": False,
+        })
+        try:
+            message = result["choices"][0]["message"]
+            content = message.get("content")
+            calls = message.get("tool_calls", [])
+            if content is not None and not isinstance(content, str):
+                raise ValueError("Invalid content")
+            if not isinstance(calls, list):
+                raise ValueError("Invalid tool calls")
+            if not calls and not (content and content.strip()):
+                raise ValueError("Empty assistant reply")
+            for call in calls:
+                if (call.get("type") != "function" or not isinstance(call.get("id"), str) or not call["id"]
+                        or not isinstance(call["function"]["name"], str)
+                        or not isinstance(call["function"]["arguments"], str)):
+                    raise ValueError("Invalid function call")
+            if len({call["id"] for call in calls}) != len(calls):
+                raise ValueError("Duplicate function call IDs")
+        except (KeyError, IndexError, TypeError, ValueError, AttributeError) as exc:
+            raise AIClientError("The provider returned an invalid tool-call response.") from exc
+        reply = {"role": "assistant", "content": content}
+        if calls:
+            reply["tool_calls"] = calls
+        return reply
 
     def generate_structured(self, instructions: str, prompt: str, schema: type[T]) -> T:
         """Generate data that fits a Pydantic schema and return it as that model."""
@@ -248,6 +288,52 @@ def _error_text(response: requests.Response) -> str:
         return str(error)
     except ValueError:
         return response.text[:300]
+
+
+def _public_api_error(response: requests.Response) -> str:
+    """Safe diagnostic categories, never provider text which may echo credentials."""
+    status = response.status_code
+    try:
+        error = response.json().get("error", {})
+        error = error if isinstance(error, dict) else {}
+    except (ValueError, AttributeError):
+        error = {}
+    code = error.get("code")
+    message = str(error.get("message", "")).casefold()
+    if code in {"insufficient_quota", "billing_hard_limit_reached"}:
+        detail = "The API account has insufficient credit or has reached its spending limit. Check API billing."
+    elif code in {"moderation_blocked", "content_policy_violation"}:
+        detail = "The image request was blocked by the provider's content checks. Revise the image prompt."
+    elif "verif" in message and "organization" in message:
+        detail = "The provider requires organization verification before this model can be used. Check your API organization's verification status."
+    elif code == "model_not_found" or status == 404:
+        detail = "The requested model or endpoint is unavailable to this API account. Check the model name and provider access."
+    elif status == 401:
+        detail = "The provider rejected the API credentials. Check the configured API key."
+    elif status == 403:
+        detail = "This API account is not permitted to use the requested model. Check model access and organization settings."
+    elif status == 429:
+        detail = "The provider rate limit was reached. Wait briefly before trying again."
+    elif status >= 500:
+        detail = "The AI provider had a server error. Try again later."
+    else:
+        detail = "The provider rejected the request settings. Check the configured model, image size, and endpoint compatibility."
+    return f"{detail} (HTTP {status})"
+
+
+def _should_retry(response: requests.Response) -> bool:
+    if response.status_code not in RETRY_STATUS_CODES:
+        return False
+    try:
+        error = response.json().get("error", {})
+        if isinstance(error, dict) and (
+            error.get("code") in {"insufficient_quota", "billing_hard_limit_reached", "moderation_blocked", "content_policy_violation"}
+            or error.get("type") == "image_generation_user_error"
+        ):
+            return False
+    except (ValueError, AttributeError):
+        pass
+    return True
 
 
 def _strip_code_fence(text: str) -> str:
